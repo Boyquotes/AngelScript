@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_module = env_modules.Clone()
+
+env_module.Append(
+	CPPFLAGS=[
+	"-Imodules/angelscript/sdk/angelscript/include",
+		"-Imodules/angelscript/sdk/add_on",
+	],
+	CXXFLAGS="-std=c++14"
+)
+env_module.add_source_files(env.modules_sources, "sdk/angelscript/source/*.cpp")
+env_module.add_source_files(env.modules_sources, "sdk/add_on/*/*.cpp")
+env_module.add_source_files(env.modules_sources, "bindings/*.cpp")
+env_module.add_source_files(env.modules_sources, "*.cpp")
