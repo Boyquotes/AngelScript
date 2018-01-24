@@ -70,6 +70,14 @@ protected:
 };
 
 
+static void * ASB_memalloc(size_t size) {
+	return memalloc(size);
+}
+
+static void ASB_memfree(void* ptr) {
+	memrealloc(ptr, 0);
+}
+
 // Implement a simple message callback function
 void ASB_MessageCallback(const asSMessageInfo *msg, void *param) {
 	const char *type = "ERR ";
@@ -80,19 +88,11 @@ void ASB_MessageCallback(const asSMessageInfo *msg, void *param) {
 	printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
 }
 
-void CHECK_CONDITION(const String& text, bool passed) {
-	if (passed) {
-		print_line(text + " passed");
-	} else {
-		ERR_PRINTS(text + " failed");
-	}
-}
-
 void register_angelscript_types() {
+	asSetGlobalMemoryFunctions(ASB_memalloc, ASB_memfree);
 	engine = asCreateScriptEngine();
 	engine->SetMessageCallback(asFUNCTION(ASB_MessageCallback), 0, asCALL_CDECL);
 	bind_angelscript_language(engine);
-	engine->RegisterGlobalFunction("void check(const String &in, bool)", asFUNCTION(CHECK_CONDITION), asCALL_CDECL);
 	ClassDB::register_class<AngelScriptRunner>();
 }
 

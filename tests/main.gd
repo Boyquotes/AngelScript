@@ -1,5 +1,5 @@
 extends SceneTree
-const CWD = "/home/geequlim/Documents/Workspace/Develop/Godot/godot/modules/angelscript/tests"
+const CWD = "F:/work/godot/modules/angelscript/tests"
 func _init():
 	print("--------------------------------")
 	var as = AngelScriptRunner.new()

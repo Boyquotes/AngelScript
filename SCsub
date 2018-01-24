@@ -12,6 +12,10 @@ env_module.Append(
 	],
 	CXXFLAGS="-std=c++14"
 )
+
+if env['bits'] == "64" and env["platform"] == "windows":
+	env_module["AS"] = "ml64"
+	env_module.add_source_files(env.modules_sources, "sdk/angelscript/source/as_callfunc_x64_msvc_asm.asm")
 env_module.add_source_files(env.modules_sources, "sdk/angelscript/source/*.cpp")
 env_module.add_source_files(env.modules_sources, "sdk/add_on/*/*.cpp")
 env_module.add_source_files(env.modules_sources, "bindings/*.cpp")
