@@ -16,9 +16,10 @@ void angelscript_debug_check(String text, bool passed) {
 }
 
 int bind_angelscript_language(asIScriptEngine *engine) {
-	int r = as_register_string(engine); ERR_FAIL_COND_V( r <0, r);
-	r = as_register_vector2(engine);    ERR_FAIL_COND_V( r <0, r);
-	r = as_register_variant(engine);    ERR_FAIL_COND_V( r <0, r);
+	int r = gen_as_declare_core_types(engine);			ERR_FAIL_COND_V( r <0, r);
+	r = as_declare_core_types(engine);					ERR_FAIL_COND_V( r <0, r);
+	r = gen_as_bind_core_value_type_behavoirs(engine);  ERR_FAIL_COND_V( r <0, r);
+	r = as_core_binding_manual(engine);					ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterGlobalFunction("void print(const String &in)", asFUNCTION(angelscript_print), asCALL_CDECL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterGlobalFunction("void check(const String &in, bool)", asFUNCTION(angelscript_debug_check), asCALL_CDECL);  ERR_FAIL_COND_V( r <0, r);
 	return r;

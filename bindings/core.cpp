@@ -5,6 +5,15 @@
 #include <cassert>
 #include "core.h"
 #include <core/print_string.h>
+#include <core/object.h>
+#include <core/class_db.h>
+
+int as_declare_core_types(asIScriptEngine *engine) {
+	ERR_FAIL_COND_V( engine == NULL, -1);
+	int r = 0;
+	r = engine->RegisterObjectType("_Object", sizeof(Object), asOBJ_REF|asOBJ_NOCOUNT ); ERR_FAIL_COND_V(r<0, r);
+	return r;
+}
 
 class ASB_StringFactory : public asIStringFactory {
 public:
@@ -74,14 +83,8 @@ int as_register_string(asIScriptEngine *engine) {
 
 	int r = 0;
 	// Factory
-	r = engine->RegisterObjectType("String", sizeof(String), asOBJ_VALUE | asGetTypeTraits<String>());   ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterStringFactory("String", &asb_string_factory);                               ERR_FAIL_COND_V( r <0, r);
-	// Behaviours
-	r = engine->RegisterObjectBehaviour("String", asBEHAVE_CONSTRUCT,  "void f()",                  asFUNCTION(as_value_constructor<String>), asCALL_CDECL_OBJLAST);           ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectBehaviour("String", asBEHAVE_CONSTRUCT,  "void f(const String &in)",  asFUNCTION(as_value_copy_constructor<String>), asCALL_CDECL_OBJLAST);      ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectBehaviour("String", asBEHAVE_DESTRUCT,   "void f()",                  asFUNCTION(as_value_desctructor<String>),  asCALL_CDECL_OBJLAST);          ERR_FAIL_COND_V( r <0, r);
 	// Operators
-	r = engine->RegisterObjectMethod("String", "String &opAssign(const String &in)", asMETHODPR(String, operator=, (const String&), String&), asCALL_THISCALL);         ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "String &opAddAssign(const String &in)", asMETHODPR(String, operator+=, (const String&), String&), asCALL_THISCALL);     ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "bool opEquals(const String &in) const", asMETHODPR(String, operator==, (const String&) const, bool), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "int opCmp(const String &in) const", asFUNCTION(as_string_compare), asCALL_CDECL_OBJFIRST);                              ERR_FAIL_COND_V( r <0, r);
@@ -89,12 +92,10 @@ int as_register_string(asIScriptEngine *engine) {
 	// Methods
 	r = engine->RegisterObjectMethod("String", "int length() const",asMETHODPR(String, length, (void) const, int), asCALL_THISCALL);    ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "bool empty() const", asMETHODPR(String, empty, (void) const, bool), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);
-
 	return r;
 }
 
 #include <core/math/math_2d.h>
-
 static void as_construct_vector2(float x, float y, Vector2 *p_this) {
 	memnew_placement(p_this, Vector2(x, y));
 }
@@ -112,18 +113,14 @@ int as_register_vector2(asIScriptEngine *engine) {
 	ERR_FAIL_COND_V( engine == NULL, -1);
 	int r = 0;
 
-	r = engine->RegisterObjectType("Vector2", sizeof(Vector2), asOBJ_VALUE | asGetTypeTraits<Vector2>());   ERR_FAIL_COND_V( r <0, r); ERR_FAIL_COND_V( r <0, r);
 	// Behaviours
 	r = engine->RegisterObjectBehaviour("Vector2", asBEHAVE_CONSTRUCT,  "void f(float x=0, float y=0)", asFUNCTION(as_construct_vector2), asCALL_CDECL_OBJLAST);				ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectBehaviour("Vector2", asBEHAVE_CONSTRUCT,  "void f(const Vector2 &in)",    asFUNCTION(as_value_copy_constructor<Vector2>), asCALL_CDECL_OBJLAST);  ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectBehaviour("Vector2", asBEHAVE_DESTRUCT,   "void f()",                     asFUNCTION(as_value_desctructor<Vector2>),  asCALL_CDECL_OBJLAST);      ERR_FAIL_COND_V( r <0, r);
 	// Properties
 	r = engine->RegisterObjectProperty("Vector2", "float x",     asOFFSET(Vector2, x));      ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectProperty("Vector2", "float width", asOFFSET(Vector2, width));  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectProperty("Vector2", "float y",     asOFFSET(Vector2, y));      ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectProperty("Vector2", "float height",asOFFSET(Vector2, height)); ERR_FAIL_COND_V( r <0, r);
 	// Operators
-	r = engine->RegisterObjectMethod("Vector2", "Vector2 &opAssign(const Vector2 &in)",   asMETHODPR(Vector2, operator=, (const Vector2&), Vector2&), asCALL_THISCALL);     ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("Vector2", "void opAddAssign(const Vector2 &in)",    asMETHODPR(Vector2, operator+=, (const Vector2&), void), asCALL_THISCALL);        ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("Vector2", "bool opEquals(const Vector2 &in) const", asMETHODPR(Vector2, operator==, (const Vector2&) const, bool), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("Vector2", "int opCmp(const Vector2 &in) const",     asFUNCTION(as_vector2_compare), asCALL_CDECL_OBJFIRST);                           ERR_FAIL_COND_V( r <0, r);
@@ -132,41 +129,60 @@ int as_register_vector2(asIScriptEngine *engine) {
 	r = engine->RegisterObjectMethod("Vector2", "float length() const",asMETHODPR(Vector2, length, (void) const, float), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("Vector2", "void normalize()", asMETHODPR(Vector2, normalize, (void), void), asCALL_THISCALL);        ERR_FAIL_COND_V( r <0, r);
 
-	// Variant to String
-	r = engine->RegisterObjectMethod("String", "String &opAssign(const Vector2 &in)", asFUNCTION((as_value_op_assign<String, Vector2>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	return r;
+}
 
+void as_free_object(Object* p_this) {
+	if (p_this) {
+		p_this->call("free");
+	}
+}
+
+int as_register_object(asIScriptEngine *engine) {
+	ERR_FAIL_COND_V(engine == NULL, -1);
+	int r = 0;
+	r = engine->RegisterObjectBehaviour("_Object", asBEHAVE_FACTORY, "_Object@ f()", asFUNCTION((as_object_factory<Object>)), asCALL_CDECL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "String get_class() const", asMETHOD(Object,	get_class), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "String get_save_class() const", asMETHOD(Object,	get_save_class), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "bool is_class() const", asMETHOD(Object,	is_class), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "bool has_meta(const String &in) const", asMETHOD(Object,	has_meta), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "void set_meta(const String &in, const Variant &in)", asMETHOD(Object,	set_meta), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "Variant get_meta(const String &in) const", asMETHOD(Object,	get_meta), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object", "void free()", asFUNCTION(as_free_object), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
 	return r;
 }
 
 int as_register_variant(asIScriptEngine *engine) {
 	ERR_FAIL_COND_V(engine == NULL, -1);
 	int r = 0;
-	r = engine->RegisterObjectType("Variant", sizeof(Variant), asOBJ_VALUE | asGetTypeTraits<Variant>());   ERR_FAIL_COND_V( r <0, r);
-	// Behaviours
-	r = engine->RegisterObjectBehaviour("Variant", asBEHAVE_CONSTRUCT,  "void f()", asFUNCTION(as_value_constructor<Variant>), asCALL_CDECL_OBJLAST);								 ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectBehaviour("Variant", asBEHAVE_CONSTRUCT,  "void f(const Variant &in)",    asFUNCTION(as_value_copy_constructor<Variant>), asCALL_CDECL_OBJLAST);		 ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectBehaviour("Variant", asBEHAVE_DESTRUCT,   "void f()",                     asFUNCTION(as_value_desctructor<Variant>),  asCALL_CDECL_OBJLAST);			 ERR_FAIL_COND_V( r <0, r);
-	// Variant <==> String
-	r = engine->RegisterObjectMethod("String",  "Variant opImplConv() const",  asFUNCTION((as_value_convert<String, Variant>)),			  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("String",  "Variant opConv() const",  asFUNCTION((as_value_convert<String, Variant>)),				  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "Variant &opAssign(const String &in)", asFUNCTION((as_value_op_assign<Variant, String>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "String opImplConv() const",  asFUNCTION((as_value_convert<Variant, String>)),			  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "String opConv() const",  asFUNCTION((as_value_convert<Variant, String>)),				  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	// Variant <==> int
-	r = engine->RegisterObjectMethod("Variant", "Variant &opAssign(const int &in)", asFUNCTION((as_value_op_assign<Variant, int32_t>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "int opImplConv() const",  asFUNCTION((as_value_convert<Variant, int32_t>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "int opConv() const",	   asFUNCTION((as_value_convert<Variant, int32_t>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	// Variant <==> float
-	r = engine->RegisterObjectMethod("Variant", "Variant &opAssign(const float &in)", asFUNCTION((as_value_op_assign<Variant, float>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "float opImplConv() const",  asFUNCTION((as_value_convert<Variant, float>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "float opConv() const",	   asFUNCTION((as_value_convert<Variant, float>)),				asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	// Variant <==> double
-	r = engine->RegisterObjectMethod("Variant", "Variant &opAssign(const double &in)", asFUNCTION((as_value_op_assign<Variant, double>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "double opImplConv() const",  asFUNCTION((as_value_convert<Variant, double>)),			  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "double opConv() const",	   asFUNCTION((as_value_convert<Variant, double>)),			  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	// Variant <==> bool
-	r = engine->RegisterObjectMethod("Variant", "Variant &opAssign(const bool &in)", asFUNCTION((as_value_op_assign<Variant, bool>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "bool opImplConv() const",  asFUNCTION((as_value_convert<Variant, bool>)),			  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("Variant", "bool opConv() const",	   asFUNCTION((as_value_convert<Variant, bool>)),			  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	// Object <==> Variant
+	r = engine->RegisterObjectMethod("_Object",  "Variant opImplConv() const",  asFUNCTION((as_value_convert<Object*, Variant>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_Object",  "Variant opConv() const",	  asFUNCTION((as_value_convert<Object*, Variant>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("Variant", "Variant &opAssign(const _Object@)", asFUNCTION((as_value_op_assign_raw<Variant, Object*>)),	asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("Variant", "_Object@ opImplConv() const",  asFUNCTION((as_value_convert<Variant, Object*>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("Variant", "_Object@ opConv() const",		 asFUNCTION((as_value_convert<Variant, Object*>)),			asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+	return r;
+}
+
+
+#include <core/bind/core_bind.h>
+
+int as_register_class_db(asIScriptEngine *engine) {
+	ERR_FAIL_COND_V(engine == NULL, -1);
+	int r = 0;
+	r = engine->RegisterObjectType("_ClassDB", 0, asOBJ_REF | asOBJ_NOCOUNT); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_ClassDB", "Variant instance(const StringName &in)", asMETHOD(_ClassDB, instance), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterGlobalProperty("_ClassDB@ ClassDB", Engine::get_singleton()->get_singleton_object("ClassDB"));  ERR_FAIL_COND_V( r <0, r);
+	return r;
+}
+
+int as_core_binding_manual(asIScriptEngine *engine) {
+	ERR_FAIL_COND_V(engine == NULL, -1);
+	int r = 0;
+	r = as_register_string(engine);		ERR_FAIL_COND_V(r<0, r);
+	r = as_register_vector2(engine);	ERR_FAIL_COND_V(r<0, r);
+	r = as_register_variant(engine);	ERR_FAIL_COND_V(r<0, r);
+	r = as_register_object(engine);		ERR_FAIL_COND_V(r<0, r);
+	r = as_register_class_db(engine);	ERR_FAIL_COND_V(r<0, r);
 	return r;
 }
