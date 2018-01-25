@@ -7,11 +7,12 @@
 #include <core/print_string.h>
 #include <core/object.h>
 #include <core/class_db.h>
+#include <core/reference.h>
 
 int as_declare_core_types(asIScriptEngine *engine) {
 	ERR_FAIL_COND_V( engine == NULL, -1);
 	int r = 0;
-	r = engine->RegisterObjectType("_Object", sizeof(Object), asOBJ_REF|asOBJ_NOCOUNT ); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("_Object", sizeof(Object), asOBJ_REF|asOBJ_NOCOUNT); ERR_FAIL_COND_V(r<0, r);
 	return r;
 }
 
@@ -138,6 +139,39 @@ void as_free_object(Object* p_this) {
 	}
 }
 
+REF& as_reference_from(Object* p_obj, REF *p_this) {
+	*p_this = Ref<Reference>(Object::cast_to<Reference>(p_obj));
+	return *p_this;
+}
+
+Object* as_get_reference_ptr(REF * p_this) {
+	return p_this->ptr();
+}
+
+static void as_object_call(asIScriptGeneric * gen) {
+	Variant ret;
+	int arg_count = gen->GetArgCount();
+
+
+	Object *self = static_cast<Object*>(gen->GetObject());
+	StringName * method = static_cast<StringName*>(gen->GetAddressOfArg(0));
+
+
+	if (arg_count > 1) {
+		Array params;
+		params.resize(arg_count - 1);
+		for(int i = 1; i < arg_count; i++) {
+			Variant * arg = static_cast<Variant*>(gen->GetAddressOfArg(i));
+			params[i-1] = *arg;
+		}
+		ret = self->callv(*method, params);
+
+	} else {
+		ret = self->call(*method);
+	}
+	gen->SetReturnObject(&ret);
+}
+
 int as_register_object(asIScriptEngine *engine) {
 	ERR_FAIL_COND_V(engine == NULL, -1);
 	int r = 0;
@@ -149,6 +183,17 @@ int as_register_object(asIScriptEngine *engine) {
 	r = engine->RegisterObjectMethod("_Object", "void set_meta(const String &in, const Variant &in)", asMETHOD(Object,	set_meta), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("_Object", "Variant get_meta(const String &in) const", asMETHOD(Object,	get_meta), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("_Object", "void free()", asFUNCTION(as_free_object), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V( r <0, r);
+
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	return r;
+}
+
+int as_register_reference(asIScriptEngine *engine) {
+	ERR_FAIL_COND_V(engine == NULL, -1);
+	int r = 0;
+	r = engine->RegisterObjectMethod("REF", "REF &opAssign(_Object@)", asFUNCTION(as_reference_from), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("REF", "_Object@ ptr()", asFUNCTION(as_get_reference_ptr), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	return r;
 }
 
@@ -166,12 +211,15 @@ int as_register_variant(asIScriptEngine *engine) {
 
 
 #include <core/bind/core_bind.h>
+Object* as_instance_object(const StringName& class_name, _ClassDB* p_this) {
+	return ClassDB::instance(class_name);
+}
 
 int as_register_class_db(asIScriptEngine *engine) {
 	ERR_FAIL_COND_V(engine == NULL, -1);
 	int r = 0;
 	r = engine->RegisterObjectType("_ClassDB", 0, asOBJ_REF | asOBJ_NOCOUNT); ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("_ClassDB", "Variant instance(const StringName &in)", asMETHOD(_ClassDB, instance), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("_ClassDB", "_Object@ instance(const StringName &in)", asFUNCTION(as_instance_object), asCALL_CDECL_OBJLAST);  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterGlobalProperty("_ClassDB@ ClassDB", Engine::get_singleton()->get_singleton_object("ClassDB"));  ERR_FAIL_COND_V( r <0, r);
 	return r;
 }
@@ -183,6 +231,7 @@ int as_core_binding_manual(asIScriptEngine *engine) {
 	r = as_register_vector2(engine);	ERR_FAIL_COND_V(r<0, r);
 	r = as_register_variant(engine);	ERR_FAIL_COND_V(r<0, r);
 	r = as_register_object(engine);		ERR_FAIL_COND_V(r<0, r);
+	r = as_register_reference(engine);  ERR_FAIL_COND_V(r<0, r);
 	r = as_register_class_db(engine);	ERR_FAIL_COND_V(r<0, r);
 	return r;
 }

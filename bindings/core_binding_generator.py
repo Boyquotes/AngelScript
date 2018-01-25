@@ -23,9 +23,19 @@ value_classes = {
 	"Color": {
 		"convertions": ['Variant']
 	},
+	"Array": {
+		"convertions": ['Variant']
+	},
+	"Dictionary": {
+		"convertions": ['Variant']
+	},
 	"Variant": {
 		"ext_copy_constructors": [],
 		"convertions": ['bool', 'int', 'float', 'double', 'String', 'StringName',  'Color', 'Vector2', 'Vector3']
+	},
+	"REF": {
+		"ext_copy_constructors": [],
+		"convertions": ['Variant']
 	},
 }
 
@@ -82,6 +92,7 @@ def line(text):
 def generate_code_text():
 	output_cpp = line('''\
 #include <core/variant.h>
+#include <core/reference.h>
 #include <core/math/math_2d.h>
 #include <core/math/vector3.h>
 #include <angelscript.h>
