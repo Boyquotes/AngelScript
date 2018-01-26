@@ -42,11 +42,11 @@ namespace godot {
 	class Sprite : Node {
 
 		void set_position(const Vector2 &in pos) {
-			ptr.call("set_position", pos);
+			ptr.call(StringName("set_position"), pos);
 		}
 
 		void set_name(const String &in name) {
-			ptr.call("set_name", name);
+			ptr.call(StringName("set_name"), name);
 		}
 
 		protected void _make_instance() {

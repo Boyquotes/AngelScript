@@ -3,7 +3,7 @@ const CWD = "F:/work/godot/modules/angelscript/tests"
 func _init():
 	# test_fibR()
 	# test_api2()
-	# test_api()
+	test_api()
 	print("--------------------------------")
 	var as = AngelScriptRunner.new()
 	as.run(str(CWD, '/', 'main.as'))

@@ -150,24 +150,33 @@ Object* as_get_reference_ptr(REF * p_this) {
 
 static void as_object_call(asIScriptGeneric * gen) {
 	Variant ret;
+
 	int arg_count = gen->GetArgCount();
-
-
 	Object *self = static_cast<Object*>(gen->GetObject());
 	StringName * method = static_cast<StringName*>(gen->GetArgObject(0));
 
-	if (arg_count > 1) {
-		Array params;
-		params.resize(arg_count - 1);
-		for(int i = 1; i < arg_count; i++) {
-			Variant * arg = static_cast<Variant*>(gen->GetArgObject(i));
-			params[i-1] = *arg;
-		}
-		ret = self->callv(*method, params);
-
-	} else {
+	if (arg_count == 1) {
 		ret = self->call(*method);
+	} else if (arg_count <= VARIANT_ARG_MAX + 1) {
+		if (arg_count == 2)
+			ret = self->call(*method, *(static_cast<Variant*>(gen->GetArgObject(1))));
+		else if (arg_count == 3)
+			ret = self->call(*method, *(static_cast<Variant*>(gen->GetArgObject(1))), *(static_cast<Variant*>(gen->GetArgObject(2))));
+		else if (arg_count == 4)
+			ret = self->call(*method, *(static_cast<Variant*>(gen->GetArgObject(1))), *(static_cast<Variant*>(gen->GetArgObject(2))), *(static_cast<Variant*>(gen->GetArgObject(3))));
+		else if (arg_count == 5)
+			ret = self->call(*method, *(static_cast<Variant*>(gen->GetArgObject(1))), *(static_cast<Variant*>(gen->GetArgObject(2))), *(static_cast<Variant*>(gen->GetArgObject(3))), *(static_cast<Variant*>(gen->GetArgObject(4))));
+		else if (arg_count == 6)
+			ret = self->call(*method, *(static_cast<Variant*>(gen->GetArgObject(1))), *(static_cast<Variant*>(gen->GetArgObject(2))), *(static_cast<Variant*>(gen->GetArgObject(3))), *(static_cast<Variant*>(gen->GetArgObject(4))), *(static_cast<Variant*>(gen->GetArgObject(5))));
+	} else if (arg_count > VARIANT_ARG_MAX + 1){
+		Array arr;
+		arr.resize(arg_count - 1);
+		for (int i=1; i<arg_count; i++) {
+			arr[i-1] = *(static_cast<Variant*>(gen->GetArgObject(i)));
+		}
+		ret = self->callv(*method, arr);
 	}
+
 	gen->SetReturnObject(&ret);
 }
 
