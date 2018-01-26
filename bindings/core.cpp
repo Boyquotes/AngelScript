@@ -136,7 +136,6 @@ int as_register_vector2(asIScriptEngine *engine) {
 void as_free_object(Object* p_this) {
 	if (p_this) {
 		memdelete(p_this);
-//		p_this->call("free");
 	}
 }
 
