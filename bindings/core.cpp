@@ -135,7 +135,8 @@ int as_register_vector2(asIScriptEngine *engine) {
 
 void as_free_object(Object* p_this) {
 	if (p_this) {
-		p_this->call("free");
+		memdelete(p_this);
+//		p_this->call("free");
 	}
 }
 
@@ -154,14 +155,13 @@ static void as_object_call(asIScriptGeneric * gen) {
 
 
 	Object *self = static_cast<Object*>(gen->GetObject());
-	StringName * method = static_cast<StringName*>(gen->GetAddressOfArg(0));
-
+	StringName * method = static_cast<StringName*>(gen->GetArgObject(0));
 
 	if (arg_count > 1) {
 		Array params;
 		params.resize(arg_count - 1);
 		for(int i = 1; i < arg_count; i++) {
-			Variant * arg = static_cast<Variant*>(gen->GetAddressOfArg(i));
+			Variant * arg = static_cast<Variant*>(gen->GetArgObject(i));
 			params[i-1] = *arg;
 		}
 		ret = self->callv(*method, params);
@@ -186,6 +186,15 @@ int as_register_object(asIScriptEngine *engine) {
 
 	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
 	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
+	r = engine->RegisterObjectMethod("_Object", "Variant call(const StringName &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(as_object_call), asCALL_GENERIC);
 	return r;
 }
 

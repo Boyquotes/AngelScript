@@ -9,7 +9,6 @@ value_classes = {
 	},
 	"StringName": {
 		"ext_copy_constructors": ['String'],
-		"convertions": ['String', 'Variant']
 	},
 	"Vector2": {
 		"convertions": ['Variant']
@@ -31,7 +30,7 @@ value_classes = {
 	},
 	"Variant": {
 		"ext_copy_constructors": [],
-		"convertions": ['bool', 'int', 'float', 'double', 'String', 'StringName',  'Color', 'Vector2', 'Vector3']
+		"convertions": ['bool', 'int', 'float', 'double', 'String',  'Color', 'Vector2', 'Vector3']
 	},
 	"REF": {
 		"ext_copy_constructors": [],
@@ -72,7 +71,6 @@ def gen_value_behavoirs():
 	// {0} ==> {1}
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((as_value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((as_value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectMethod("{0}", "{1} opConv() const", asFUNCTION((as_value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 	for cls in value_classes:
 		cfg = value_classes[cls]
