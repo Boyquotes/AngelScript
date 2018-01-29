@@ -1,10 +1,10 @@
 #!/usr/env python3
 import os
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-TARGET = "core.gen.cpp"
+TARGET = "value_types.gen.cpp"
 value_classes = {
 	"String": {
-		"ext_copy_constructors": ['StringName'],
+		"ext_copy_constructors": [],
 		"convertions": ['StringName', 'Variant']
 	},
 	"StringName": {
@@ -53,24 +53,24 @@ def gen_declare_core_types():
 	template = '\tr = engine->RegisterObjectType("{0}", sizeof({0}), asOBJ_VALUE|asGetTypeTraits<{0}>()); ERR_FAIL_COND_V(r<0, r);\n'
 	for cls in value_classes:
 		text += template.format(cls)
-	return wrapp_as_register_function('gen_as_declare_core_types', text)
+	return wrapp_as_register_function('_declare_value_types_gen', text)
 
 def gen_value_behavoirs():
 	text = ""
 	cdka_template = '''\
 	// {0}
-	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(as_value_constructor<{0}>), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f(const {0} &in)", asFUNCTION(as_value_copy_constructor<{0}>), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_DESTRUCT,  "void f()", asFUNCTION(as_value_desctructor<{0}>),  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {0} &in)", asFUNCTION((as_value_op_assign<{0}, {0}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(value_constructor<{0}>), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f(const {0} &in)", asFUNCTION(value_copy_constructor<{0}>), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_DESTRUCT,  "void f()", asFUNCTION(value_desctructor<{0}>),  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {0} &in)", asFUNCTION((value_op_assign<{0}, {0}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 	extc_template = '''\
-	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f(const {1} &in)", asFUNCTION((as_value_copy_constructor<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f(const {1} &in)", asFUNCTION((value_copy_constructor<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 	convt_template = '''\
 	// {0} ==> {1}
-	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((as_value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((as_value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 	for cls in value_classes:
 		cfg = value_classes[cls]
@@ -81,7 +81,7 @@ def gen_value_behavoirs():
 		if cfg and 'convertions' in cfg:
 			for ext_type in cfg['convertions']:
 				text += convt_template.format(cls,ext_type)
-	return wrapp_as_register_function('gen_as_bind_core_value_type_behavoirs', text)
+	return wrapp_as_register_function('_define_value_types_gen', text)
 
 
 def line(text):
@@ -89,18 +89,20 @@ def line(text):
 
 def generate_code_text():
 	output_cpp = line('''\
+#include "value_types.h"
+#include "utils.h"
 #include <core/variant.h>
 #include <core/reference.h>
 #include <core/math/math_2d.h>
 #include <core/math/vector3.h>
 #include <angelscript.h>
-#include "core.h"
 ''')
 	output_cpp += line('')
+	output_cpp += line('namespace asb {')
 	output_cpp += line(gen_declare_core_types())
 	output_cpp += line('')
 	output_cpp += line(gen_value_behavoirs())
-
+	output_cpp += line('}')
 	try:
 		needUpdate = True
 		path = os.path.join(ROOT_DIR, TARGET)
