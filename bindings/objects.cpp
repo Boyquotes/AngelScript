@@ -57,7 +57,7 @@ void object_call(asIScriptGeneric * gen);
 REF& reference_from(Object* p_obj, REF *p_this);
 Object* get_reference_ptr(REF * p_this);
 
-int asb::define_object_types(asIScriptEngine *engine) {
+int define_object_types(asIScriptEngine *engine) {
 	ERR_FAIL_COND_V( engine == NULL, -1);
 	int r = 0;
 
@@ -101,7 +101,7 @@ int asb::define_object_types(asIScriptEngine *engine) {
 }
 
 
-static void object_call(asIScriptGeneric * gen) {
+void object_call(asIScriptGeneric * gen) {
 	Variant ret;
 
 	int arg_count = gen->GetArgCount();

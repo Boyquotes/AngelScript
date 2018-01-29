@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import json, os, sys
 import xml.etree.ElementTree as ET
-
+GODOT_ROOT = "../../../godot"
 CLASS_INFO = {}
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 TARGET = "value_types.gen.cpp"
@@ -14,33 +14,43 @@ value_classes = {
 		"ext_copy_constructors": ['String'],
 	},
 	"Vector2": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Rect2": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Vector3": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Plane": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"AABB": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Quat": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Basis": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Transform": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Transform2D": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Color": {
+		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"NodePath": {
@@ -155,9 +165,13 @@ int %s(asIScriptEngine *engine) {
 
 def gen_declare_core_types():
 	text = ""
-	template = '\tr = engine->RegisterObjectType("{0}", sizeof({0}), asOBJ_VALUE|asGetTypeTraits<{0}>()); ERR_FAIL_COND_V(r<0, r);\n'
+	template = '\tr = engine->RegisterObjectType("{0}", sizeof({0}), {1}asOBJ_VALUE|asGetTypeTraits<{0}>()); ERR_FAIL_COND_V(r<0, r);\n'
 	for cls in value_classes:
-		text += template.format(cls)
+		flags = ''
+		c = value_classes[cls]
+		if 'flags' in c and len(c['flags']):
+			flags = c['flags'] + '|'
+		text += template.format(cls, flags)
 	return wrapp_as_register_function('_declare_value_types_gen', text)
 
 def gen_value_behavoirs():
@@ -239,6 +253,9 @@ def generate_code_text():
 #include <core/reference.h>
 #include <core/math/math_2d.h>
 #include <core/math/vector3.h>
+#include <core/math/aabb.h>
+#include <core/math/plane.h>
+#include <core/math/transform.h>
 #include <angelscript.h>
 ''')
 	output_cpp += line('')
@@ -260,5 +277,5 @@ def generate_code_text():
 		print(e)
 
 if __name__ == '__main__':
-	CLASS_INFO = load_core_xml_doc(os.path.join(ROOT_DIR, '../../../doc/classes'), list(value_classes.keys()))
+	CLASS_INFO = load_core_xml_doc(os.path.join(GODOT_ROOT, 'doc', 'classes'), list(value_classes.keys()))
 	generate_code_text()

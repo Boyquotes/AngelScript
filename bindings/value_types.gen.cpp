@@ -4,6 +4,9 @@
 #include <core/reference.h>
 #include <core/math/math_2d.h>
 #include <core/math/vector3.h>
+#include <core/math/aabb.h>
+#include <core/math/plane.h>
+#include <core/math/transform.h>
 #include <angelscript.h>
 
 
@@ -13,16 +16,16 @@ int _declare_value_types_gen(asIScriptEngine *engine) {
 	int r = 0;
 	r = engine->RegisterObjectType("String", sizeof(String), asOBJ_VALUE|asGetTypeTraits<String>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("StringName", sizeof(StringName), asOBJ_VALUE|asGetTypeTraits<StringName>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Vector2", sizeof(Vector2), asOBJ_VALUE|asGetTypeTraits<Vector2>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Rect2", sizeof(Rect2), asOBJ_VALUE|asGetTypeTraits<Rect2>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Vector3", sizeof(Vector3), asOBJ_VALUE|asGetTypeTraits<Vector3>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Plane", sizeof(Plane), asOBJ_VALUE|asGetTypeTraits<Plane>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("AABB", sizeof(AABB), asOBJ_VALUE|asGetTypeTraits<AABB>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Quat", sizeof(Quat), asOBJ_VALUE|asGetTypeTraits<Quat>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Basis", sizeof(Basis), asOBJ_VALUE|asGetTypeTraits<Basis>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Transform", sizeof(Transform), asOBJ_VALUE|asGetTypeTraits<Transform>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Transform2D", sizeof(Transform2D), asOBJ_VALUE|asGetTypeTraits<Transform2D>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("Color", sizeof(Color), asOBJ_VALUE|asGetTypeTraits<Color>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Vector2", sizeof(Vector2), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Vector2>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Rect2", sizeof(Rect2), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Rect2>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Vector3", sizeof(Vector3), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Vector3>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Plane", sizeof(Plane), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Plane>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("AABB", sizeof(AABB), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<AABB>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Quat", sizeof(Quat), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Quat>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Basis", sizeof(Basis), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Basis>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Transform", sizeof(Transform), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Transform>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Transform2D", sizeof(Transform2D), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Transform2D>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("Color", sizeof(Color), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Color>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("NodePath", sizeof(NodePath), asOBJ_VALUE|asGetTypeTraits<NodePath>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("REF", sizeof(REF), asOBJ_VALUE|asGetTypeTraits<REF>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("RID", sizeof(RID), asOBJ_VALUE|asGetTypeTraits<RID>()); ERR_FAIL_COND_V(r<0, r);
