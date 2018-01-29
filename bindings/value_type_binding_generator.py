@@ -1,5 +1,8 @@
-#!/usr/env python3
-import os
+#!/usr/bin/python
+import json, os, sys
+import xml.etree.ElementTree as ET
+
+CLASS_INFO = {}
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 TARGET = "value_types.gen.cpp"
 value_classes = {
@@ -19,24 +22,126 @@ value_classes = {
 	"Vector3": {
 		"convertions": ['Variant']
 	},
+	"Plane": {
+		"convertions": ['Variant']
+	},
+	"AABB": {
+		"convertions": ['Variant']
+	},
+	"Quat": {
+		"convertions": ['Variant']
+	},
+	"Basis": {
+		"convertions": ['Variant']
+	},
+	"Transform": {
+		"convertions": ['Variant']
+	},
+	"Transform2D": {
+		"convertions": ['Variant']
+	},
 	"Color": {
+		"convertions": ['Variant']
+	},
+	"NodePath": {
+		"convertions": ['Variant']
+	},
+	"REF": {
+		"ext_copy_constructors": [],
+		"convertions": ['Variant']
+	},
+	"RID": {
+		"ext_copy_constructors": [],
+		"convertions": ['Variant']
+	},
+	"Dictionary": {
 		"convertions": ['Variant']
 	},
 	"Array": {
 		"convertions": ['Variant']
 	},
-	"Dictionary": {
+	"PoolByteArray": {
+		"convertions": ['Variant']
+	},
+	"PoolIntArray": {
+		"convertions": ['Variant']
+	},
+	"PoolRealArray": {
+		"convertions": ['Variant']
+	},
+	"PoolStringArray": {
+		"convertions": ['Variant']
+	},
+	"PoolVector2Array": {
+		"convertions": ['Variant']
+	},
+	"PoolVector3Array": {
+		"convertions": ['Variant']
+	},
+	"PoolColorArray": {
 		"convertions": ['Variant']
 	},
 	"Variant": {
 		"ext_copy_constructors": [],
 		"convertions": ['bool', 'int', 'float', 'double', 'String',  'Color', 'Vector2', 'Vector3']
 	},
-	"REF": {
-		"ext_copy_constructors": [],
-		"convertions": ['Variant']
-	},
 }
+
+# load methods from xml docs
+def load_core_xml_doc(dir, accept_cls=[]):
+	classes = {}
+	def parseClass(data):
+		def parseMethod(data):
+			dictMethod = dict(data.attrib)
+			dictMethod['description'] = data.find("description").text.strip()
+			dictMethod['return_type'] = data.find("return").attrib["type"] if data.find("return") is not None else ""
+			if "qualifiers" not in dictMethod:  dictMethod["qualifiers"] = ""
+			dictMethod["arguments"] = []
+			for arg in data.iter('argument'):
+				dictMethod["arguments"].append(parseArgument(arg))
+			return dictMethod
+		def parseArgument(data):
+			dictArg = dict(data.attrib)
+			if "dictArg" in dictArg: dictArg.pop("index")
+			dictArg["default_value"] = dictArg["default"] if "default" in dictArg else ""
+			if "default" in dictArg: dictArg.pop("default")
+			return dictArg
+		def parseConstant(data):
+			dictConst = dict(data.attrib)
+			dictConst["description"] = data.text.strip()
+			return dictConst
+		def parseProperty(data):
+			dictProp = dict(data.attrib)
+			dictProp["description"] = data.text.strip()
+			return dictProp
+		dictCls = dict(data.attrib)
+		dictCls['brief_description'] = data.find("brief_description").text.strip()
+		dictCls['description'] = data.find("description").text.strip()
+		dictCls['methods'] = []
+		for m in data.find("methods"):
+			dictCls['methods'].append(parseMethod(m))
+		dictCls['signals'] = []
+		for s in (data.find("signals") if data.find("signals") is not None else []):
+			dictCls['signals'].append(parseMethod(s))
+		dictCls['constants'] = []
+		for c in (data.find("constants") if data.find("constants") is not None else []):
+			dictCls['constants'].append(parseConstant(c))
+		dictCls['properties'] = []
+		for m in (data.find("members") if data.find("members") is not None else []):
+			dictCls['properties'].append(parseProperty(m))
+		dictCls['theme_properties'] = []
+		for thi in (data.find("theme_items") if data.find("theme_items") is not None else []):
+			dictCls['theme_properties'].append(parseProperty(thi))
+		return dictCls
+	if os.path.isdir(dir):
+		for fname in os.listdir(dir):
+			if fname.endswith('.xml') and fname.replace('.xml', '') in accept_cls:
+				f = os.path.join(dir, fname)
+				tree = ET.parse(open(f, 'r'))
+				cls = tree.getroot()
+				dictCls = parseClass(cls)
+				classes[dictCls['name']] = dictCls
+	return classes
 
 def wrapp_as_register_function(funcname, text):
 	return '''\
@@ -72,6 +177,38 @@ def gen_value_behavoirs():
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
+
+	def bind_method(cls, md):
+		def gen_signature(md):
+			qualifiers = ' const' if md['qualifiers'] == 'const' else ''
+			args = ''
+			for arg in md['arguments']:
+				type = arg['type']
+				if type in value_classes:
+					type = 'const '+ type +' &in'
+				args += type
+				if arg != md['arguments'][-1]:
+					args +=', '
+			return '{0} {1}({2}){3}'.format(md['return_type'], md['name'], args, qualifiers)
+		def gen_bind_signature(md):
+			qualifiers = ' const' if md['qualifiers'] == 'const' else ''
+			args = ''
+			for arg in md['arguments']:
+				type = arg['type']
+				if type in value_classes:
+					type = 'const '+ type +'&'
+				args += type
+				if arg != md['arguments'][-1]:
+					args +=', '
+			args = '(' + args + ')' if len(args) else '(void)'
+			return args + qualifiers + ', ' + md['return_type']
+		# constructors
+		if md['name'] == cls:
+			return ''
+		else:
+			return '\tr = engine->RegisterObjectMethod("{0}", "{1}", asMETHODPR({0}, {2}, {3}), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);\n'.format(cls, gen_signature(md), md['name'], gen_bind_signature(md))
+
+
 	for cls in value_classes:
 		cfg = value_classes[cls]
 		text += cdka_template.format(cls)
@@ -81,6 +218,13 @@ def gen_value_behavoirs():
 		if cfg and 'convertions' in cfg:
 			for ext_type in cfg['convertions']:
 				text += convt_template.format(cls,ext_type)
+		# if cls in CLASS_INFO:
+		# 	cls_info = CLASS_INFO[cls]
+		# 	if 'methods' in cls_info:
+		# 		if len(cls_info['methods']) > 0:
+		# 			text += '\t// {0} methods\n'.format(cls)
+		# 		for md in cls_info['methods']:
+		# 			text += bind_method(cls, md)
 	return wrapp_as_register_function('_define_value_types_gen', text)
 
 
@@ -116,4 +260,5 @@ def generate_code_text():
 		print(e)
 
 if __name__ == '__main__':
+	CLASS_INFO = load_core_xml_doc(os.path.join(ROOT_DIR, '../../../doc/classes'), list(value_classes.keys()))
 	generate_code_text()
