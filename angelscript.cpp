@@ -232,3 +232,172 @@ int AngelScriptLanguage::profiling_get_frame_data(ScriptLanguage::ProfilingInfo 
 void AngelScriptLanguage::frame() {
 
 }
+
+void AngelScript::_bind_methods() {
+
+}
+
+bool AngelScript::can_instance() const {
+	return false;
+}
+
+Ref<AngelScript::Script> AngelScript::get_base_script() const {
+	return NULL;
+}
+
+StringName AngelScript::get_instance_base_type() const {
+	return StringName("");
+}
+
+ScriptInstance *AngelScript::instance_create(Object *p_this) {
+	return NULL;
+}
+
+bool AngelScript::instance_has(const Object *p_this) const {
+	return false;
+}
+
+String AngelScript::get_source_code() const {
+	return "";
+}
+
+void AngelScript::set_source_code(const String &p_code) {
+
+}
+
+Error AngelScript::reload(bool p_keep_state) {
+	return OK;
+}
+
+bool AngelScript::has_method(const StringName &p_method) {
+	return false;
+}
+
+MethodInfo AngelScript::get_method_info(const StringName &p_method) const {
+	MethodInfo mi;
+	return mi;
+}
+
+bool AngelScript::is_tool() const {
+	return false;
+}
+
+ScriptLanguage *AngelScript::get_language() const {
+	return AngelScriptLanguage::get_singletion();
+}
+
+bool AngelScript::has_script_signal(const StringName &p_signal) const {
+	return false;
+}
+
+void AngelScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+
+}
+
+bool AngelScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
+	return false;
+}
+
+void AngelScript::get_script_method_list(List<MethodInfo> *p_list) const {
+
+}
+
+void AngelScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+
+}
+
+void AngelScript::get_constants(Map<StringName, Variant> *p_constants) {
+
+}
+
+void AngelScript::get_members(Set<StringName> *p_constants) {
+
+}
+
+AngelScript::AngelScript() {
+
+}
+
+AngelScript::~AngelScript() {
+
+}
+
+bool AngelScriptInstance::set(const StringName &p_name, const Variant &p_value) {
+	return false;
+}
+
+bool AngelScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
+	return false;
+}
+
+void AngelScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+
+}
+
+Variant::Type AngelScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
+	return Variant::NIL;
+}
+
+Object *AngelScriptInstance::get_owner() {
+	return NULL;
+}
+
+void AngelScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
+
+}
+
+void AngelScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
+
+}
+
+bool AngelScriptInstance::has_method(const StringName &p_method) const {
+	return false;
+}
+
+Variant AngelScriptInstance::call(const StringName &p_method, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5) {
+	return NULL;
+}
+
+Variant AngelScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	return NULL;
+}
+
+void AngelScriptInstance::call_multilevel(const StringName &p_method, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5) {
+
+}
+
+void AngelScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
+
+}
+
+void AngelScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
+
+}
+
+void AngelScriptInstance::notification(int p_notification) {
+
+}
+
+Ref<Script> AngelScriptInstance::get_script() const {
+	return NULL;
+}
+
+ScriptInstance::RPCMode AngelScriptInstance::get_rpc_mode(const StringName &p_method) const {
+	return RPC_MODE_DISABLED;
+}
+
+ScriptInstance::RPCMode AngelScriptInstance::get_rset_mode(const StringName &p_variable) const {
+	return RPC_MODE_DISABLED;
+}
+
+ScriptLanguage *AngelScriptInstance::get_language() {
+	return AngelScriptLanguage::get_singletion();
+}
+
+AngelScriptInstance::AngelScriptInstance() {
+
+}
+
+AngelScriptInstance::~AngelScriptInstance() {
+
+}
