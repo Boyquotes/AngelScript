@@ -14,14 +14,23 @@ value_classes = {
 		"ext_copy_constructors": ['String'],
 	},
 	"Vector2": {
+		"param_constructors": [
+			['float', 'float']
+		],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Rect2": {
+		"param_constructors": [
+			['float', 'float', 'float', 'float']
+		],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Vector3": {
+		"param_constructors": [
+			['float', 'float', 'float']
+		],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
@@ -50,6 +59,10 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"Color": {
+		"param_constructors": [
+			['float', 'float', 'float'],
+			['float', 'float', 'float', 'float'],
+		],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
@@ -183,6 +196,9 @@ def gen_value_behavoirs():
 	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_DESTRUCT,  "void f()", asFUNCTION(value_desctructor<{0}>),  asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {0} &in)", asFUNCTION((value_op_assign<{0}, {0}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
+	param_constructor_tmp = '''\
+	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f({1})", asFUNCTION((value_constructor<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+'''
 	extc_template = '''\
 	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f(const {1} &in)", asFUNCTION((value_copy_constructor<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
@@ -229,6 +245,16 @@ def gen_value_behavoirs():
 		if cfg and 'ext_copy_constructors' in cfg:
 			for ext_type in cfg['ext_copy_constructors']:
 				text += extc_template.format(cls,ext_type)
+		if cfg and 'param_constructors' in cfg:
+			for plist in cfg['param_constructors']:
+				params = ''
+				idx = 0
+				for p in plist:
+					params += p
+					if idx < len(plist) - 1:
+						params += ', '
+					idx += 1
+				text += param_constructor_tmp.format(cls, params)
 		if cfg and 'convertions' in cfg:
 			for ext_type in cfg['convertions']:
 				text += convt_template.format(cls,ext_type)

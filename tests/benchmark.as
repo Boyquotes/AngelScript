@@ -4,8 +4,7 @@ void benchmark_api_call() {
 
 	for (int i=0; i<100000; i++) {
 		godot::Sprite s;
-		s.set_position(Vector2());
-		// s.set_position(Vector2(100, 100));
+		s.set_position(Vector2(100, 100));
 		s.set_name("Hello");
 		s.free();
 	}

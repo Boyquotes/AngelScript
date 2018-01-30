@@ -11,6 +11,26 @@ void value_constructor(T *p_this) {
 	memnew_placement(p_this, T);
 }
 
+template<class T, class P>
+void value_constructor(P p1, T *p_this) {
+	memnew_placement(p_this, T(p1));
+}
+
+template<class T, class P1, class P2>
+void value_constructor(P1 p1, P2 p2, T *p_this) {
+	memnew_placement(p_this, T(p1, p2));
+}
+
+template<class T, class P1, class P2, class P3>
+void value_constructor(P1 p1, P2 p2, P3 p3, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3));
+}
+
+template<class T, class P1, class P2, class P3, class P4>
+void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3, p4));
+}
+
 /**
  * Destructor of value types
  */
