@@ -3,13 +3,17 @@
 #include <core/reference.h>
 #include <core/class_db.h>
 #include <angelscript.h>
+#include "angelscript.h"
+#include "bindings/utils.h"
 #include <scriptbuilder/scriptbuilder.h>
-
-asIScriptEngine *engine = NULL;
 
 class AngelScriptRunner : public Reference {
 	GDCLASS(AngelScriptRunner, Reference);
+	asIScriptEngine *engine;
 public:
+	AngelScriptRunner() {
+		engine = AngelScriptLanguage::get_singletion()->get_script_engine();
+	}
 	void run(const String& p_script) {
 		// The CScriptBuilder helper is an add-on that loads the file,
 		// performs a pre-processing pass if necessary, and then tells
@@ -69,33 +73,19 @@ protected:
 	}
 };
 
-
-static void * ASB_memalloc(size_t size) {
-	return memalloc(size);
-}
-
-static void ASB_memfree(void* ptr) {
-	memrealloc(ptr, 0);
-}
-
-// Implement a simple message callback function
-void ASB_MessageCallback(const asSMessageInfo *msg, void *param) {
-	const char *type = "ERR ";
-	if( msg->type == asMSGTYPE_WARNING )
-		type = "WARN";
-	else if( msg->type == asMSGTYPE_INFORMATION )
-		type = "INFO";
-	printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
-}
-
 void register_angelscript_types() {
-	asSetGlobalMemoryFunctions(ASB_memalloc, ASB_memfree);
-	engine = asCreateScriptEngine();
-	engine->SetMessageCallback(asFUNCTION(ASB_MessageCallback), 0, asCALL_CDECL);
-	bind_angelscript_language(engine);
+
+	asSetGlobalMemoryFunctions(asb::as_memalloc, asb::as_memfree);
+
+	memnew(AngelScriptLanguage);
+	ScriptServer::register_language(AngelScriptLanguage::get_singletion());
+
 	ClassDB::register_class<AngelScriptRunner>();
 }
 
 void unregister_angelscript_types() {
+
+	ScriptServer::unregister_language(AngelScriptLanguage::get_singletion());
+	memdelete(AngelScriptLanguage::get_singletion());
 
 }

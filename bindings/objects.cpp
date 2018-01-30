@@ -133,7 +133,7 @@ void object_call(asIScriptGeneric * gen) {
 }
 
 REF& reference_from(Object* p_obj, REF *p_this) {
-	*p_this = Ref<Reference>(Object::cast_to<Reference>(p_obj));
+	*p_this = REF(Object::cast_to<Reference>(p_obj));
 	return *p_this;
 }
 

@@ -1,8 +1,19 @@
 #ifndef AS_BINDING_UTILS_H
 #define AS_BINDING_UTILS_H
 #include <core/object.h>
+#include <core/os/memory.h>
+#include <angelscript.h>
 
 namespace asb {
+
+static void * as_memalloc(size_t size) {
+	return memalloc(size);
+}
+
+static void as_memfree(void* ptr) {
+	memrealloc(ptr, 0);
+}
+
 /**
  * Default constructor for value types
  */
