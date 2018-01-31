@@ -16,10 +16,4 @@ void main() {
 	benchmark_api_call();
 	// benchmark_api_call2();
 	// benchmark_fibR();
-
-	// godot::Sprite n;
-	// n.set_name("你好，节点");
-	// print(n.get_name());
-	// n.free();
-	// print(v);
 }

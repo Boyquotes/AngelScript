@@ -1,4 +1,5 @@
 namespace godot {
+
 	class Object {
 
 		Object() {
@@ -6,48 +7,49 @@ namespace godot {
 		}
 
 		protected void _make_instance() {
-			@ptr = Object_t();
+			@ptr = bindings::Object();
 		}
 
-		// bool has_meta(const String &in p_name) const {
-		// 	return ptr.has_meta(p_name);
-		// }
+		bool has_meta(const String &in p_name) const {
+			return ptr.godot_icall(bindings::id_Object_has_meta, p_name);
+		}
 
-		// void set_meta(const String &in p_name, const Variant &in val) {
-		// 	ptr.set_meta(p_name, val);
-		// }
+		void set_meta(const String &in p_name, const Variant &in val) {
+			ptr.godot_icall(bindings::id_Object_set_meta, p_name, val);
+		}
 
-		// String get_class() const {
-		// 	return ptr.get_class();
-		// }
+		Variant get_meta(const String &in p_name) const {
+			return ptr.godot_icall(bindings::id_Object_get_meta, p_name);
+		}
 
-		// Variant get_meta(const String &in p_name) const {
-		// 	return ptr.get_meta(p_name);
-		// }
+		String get_class() const {
+			return ptr.godot_icall(bindings::id_Object_get_class);
+		}
 
 		void free() {
 			ptr.free();
 			@ptr = null;
 		}
 
-		protected Object_t@ ptr;
+		Variant opImplConv() const {
+			return @ptr;
+		}
+
+		protected bindings::Object@ ptr;
 	};
 
 	class Node : Object {
 
 		void set_name(const String &in name) {
-			// cast<Node_t>(ptr).set_name(name);
-			// ptr.call(StringName("set_name"), name);
-			ptr.call(sn_Node, sn_Node_set_name, name);
+			ptr.godot_icall(bindings::id_Node_set_name, name);
 		}
 
 		String get_name() const {
-			return ptr.call(sn_Node, sn_Node_get_name);
+			return ptr.godot_icall(bindings::id_Node_get_name);
 		}
 
 		protected void _make_instance() {
-			// @ptr = Node_t();
-			@ptr = instance_class(sn_Node);
+			@ptr = bindings::instance_class(bindings::id_Node);
 		}
 	}
 
@@ -55,69 +57,49 @@ namespace godot {
 
 
 		void set_position(const Vector2 &in pos) {
-			ptr.call(sn_Node2D, sn_Node2D_set_position, pos);
-			// cast<Node2D_t>(ptr).set_position(pos);
-			// ptr.call(StringName("set_position"), pos);
+			ptr.godot_icall(bindings::id_Node2D_set_position, pos);
 		}
 
 		protected void _make_instance() {
-			@ptr = instance_class(sn_Node2D);
+			@ptr = bindings::instance_class(bindings::id_Node2D);
 		}
 	}
 
 	class Sprite : Node2D {
 
 		protected void _make_instance() {
-			@ptr = instance_class(sn_Sprite);
+			@ptr = bindings::instance_class(bindings::id_Sprite);
 		}
 	}
 
-	// class Reference : Object {
+	class Reference : Object {
 
-	// 	protected void _make_instance() {
-	// 		@ptr = (ref = Reference_t()).ptr();
-	// 	}
-	// 	protected REF ref;
-	// }
+		protected void _make_instance() {
+			@ptr = (ref = bindings::instance_class(bindings::id_Reference)).ptr();
+		}
+		protected REF ref;
+	}
 
-	// class Resource : Reference {
+	class Resource : Reference {
 
-	// 	String get_name() const {
-	// 		return ptr.call("get_name");
-	// 	}
+		void set_name(const String &in name) {
+			ptr.godot_icall(bindings::id_Resource_set_name, name);
+		}
 
-	// 	void set_name(const String &in p_name) const {
-	// 		ptr.call("set_name", p_name);
-	// 	}
+		String get_name() const {
+			return ptr.godot_icall(bindings::id_Resource_get_name);
+		}
 
-	// 	Variant opImplConv() const {
-	// 		return ref;
-	// 	}
+		protected void _make_instance() {
+			@ptr = (ref = bindings::instance_class(bindings::id_Resource)).ptr();
+		}
+	}
 
-	// 	protected void _make_instance() {
-	// 		@ptr = (ref = Reference).ptr();
-	// 	}
-	// }
-
-	// class Theme : Resource {
-	// 	void set_color(const String &in name, const String &in type, const Color &in color) {
-	// 		ptr.call("set_color", name, type, color);
-	// 	}
-
-	// 	Color get_color(const String &in name, const String &in type) const {
-	// 		return ptr.call("get_color", name, type);
-	// 	}
-
-	// 	protected void _make_instance() {
-	// 		@ptr=(ref=ClassDB.instance("Theme")).ptr();
-	// 	}
-	// }
-
-	// class ImageTexture : Resource {
-	// 	protected void _make_instance() {
-	// 		@ptr=(ref=ClassDB.instance("ImageTexture")).ptr();
-	// 	}
-	// }
+	class ImageTexture : Resource {
+		protected void _make_instance() {
+			@ptr = (ref = bindings::instance_class(bindings::id_ImageTexture)).ptr();
+		}
+	}
 }
 
 // void test_object() {
