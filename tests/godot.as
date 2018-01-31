@@ -36,12 +36,18 @@ namespace godot {
 	class Node : Object {
 
 		void set_name(const String &in name) {
-			cast<Node_t>(ptr).set_name(name);
+			// cast<Node_t>(ptr).set_name(name);
 			// ptr.call(StringName("set_name"), name);
+			ptr.call(sn_Node, sn_Node_set_name, name);
+		}
+
+		String get_name() const {
+			return ptr.call(sn_Node, sn_Node_get_name);
 		}
 
 		protected void _make_instance() {
-			@ptr = Node_t();
+			// @ptr = Node_t();
+			@ptr = instance_class(sn_Node);
 		}
 	}
 
@@ -49,29 +55,30 @@ namespace godot {
 
 
 		void set_position(const Vector2 &in pos) {
-			cast<Node2D_t>(ptr).set_position(pos);
+			ptr.call(sn_Node2D, sn_Node2D_set_position, pos);
+			// cast<Node2D_t>(ptr).set_position(pos);
 			// ptr.call(StringName("set_position"), pos);
 		}
 
 		protected void _make_instance() {
-			@ptr = Node2D_t();
+			@ptr = instance_class(sn_Node2D);
 		}
 	}
 
 	class Sprite : Node2D {
 
 		protected void _make_instance() {
-			@ptr = cast<Object_t>(@Sprite_t());
+			@ptr = instance_class(sn_Sprite);
 		}
 	}
 
-	class Reference : Object {
+	// class Reference : Object {
 
-		protected void _make_instance() {
-			@ptr = (ref = Reference_t()).ptr();
-		}
-		protected REF ref;
-	}
+	// 	protected void _make_instance() {
+	// 		@ptr = (ref = Reference_t()).ptr();
+	// 	}
+	// 	protected REF ref;
+	// }
 
 	// class Resource : Reference {
 

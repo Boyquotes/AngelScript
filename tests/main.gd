@@ -1,5 +1,5 @@
 extends SceneTree
-const CWD = "/home/geequlim/Documents/Workspace/Develop/Godot/modules/angelscript/tests"
+const CWD = "F:/work/godot/modules/angelscript/tests"
 func _init():
 	# test_fibR()
 	# test_api2()

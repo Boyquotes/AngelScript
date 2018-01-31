@@ -1,10 +1,14 @@
 #!/usr/bin/python
 import json, os, sys
 import xml.etree.ElementTree as ET
-GODOT_ROOT = "../../../godot"
+
+GODOT_ROOT = "../../.."
 CLASS_INFO = {}
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-TARGET = "value_types.gen.cpp"
+
+VALUE_TARGET = "value_types.gen.cpp"
+OBJECT_TARGET = "objects.include.gen.cpp"
+
 value_classes = {
 	"String": {
 		"ext_copy_constructors": [],
@@ -12,6 +16,7 @@ value_classes = {
 	},
 	"StringName": {
 		"ext_copy_constructors": ['String'],
+		"convertions": ['Variant']
 	},
 	"Vector2": {
 		"param_constructors": [
@@ -109,6 +114,31 @@ value_classes = {
 		"convertions": ['bool', 'int', 'float', 'double', 'String',  'Color', 'Vector2', 'Vector3']
 	},
 }
+
+def line(text):
+	return text + '\n'
+
+def glob_path(path, pattern):
+	import fnmatch
+	result = []
+	for root, subdirs, files in os.walk(path):
+		for filename in files:
+			if fnmatch.fnmatch(filename, pattern):
+				result.append(os.path.join(root, filename))
+	return result
+
+def save_text_file(filename, text):
+	try:
+		needUpdate = True
+		path = os.path.join(ROOT_DIR, filename)
+		if os.path.isfile(path):
+			if text == open(path).read():
+				needUpdate = False
+		if needUpdate:
+			open(path, 'w').write(text)
+	except Exception as e:
+		print("Failed to generate core.gen.h")
+		print(e)
 
 # load methods from xml docs
 def load_core_xml_doc(dir, accept_cls=[]):
@@ -267,10 +297,6 @@ def gen_value_behavoirs():
 		# 			text += bind_method(cls, md)
 	return wrapp_as_register_function('_define_value_types_gen', text)
 
-
-def line(text):
-	return text + '\n'
-
 def generate_code_text():
 	output_cpp = line('''\
 #include "value_types.h"
@@ -290,18 +316,29 @@ def generate_code_text():
 	output_cpp += line('')
 	output_cpp += line(gen_value_behavoirs())
 	output_cpp += line('}')
-	try:
-		needUpdate = True
-		path = os.path.join(ROOT_DIR, TARGET)
-		if os.path.isfile(path):
-			if output_cpp == open(path).read():
-				needUpdate = False
-		if needUpdate:
-			open(path, 'w').write(output_cpp)
-	except Exception as e:
-		print("Failed to generate core.gen.h")
-		print(e)
+	save_text_file(VALUE_TARGET, output_cpp)
+
+def gen_object_include_cpp():
+	output_cpp = line("#ifndef AS_BIND_OBJECT_INCLUDE_CPP")
+	output_cpp += line("#define AS_BIND_OBJECT_INCLUDE_CPP")
+	IGNORED_FOLDERS = ["drivers", "doc", "bin", "misc", "platform", "thirdparty"]
+	for f in glob_path(GODOT_ROOT, "**.h"):
+		ff = f.replace("\\", '/').replace(GODOT_ROOT + '/', '')
+		if ff.split('/')[0] in IGNORED_FOLDERS:
+			continue
+		try:
+			if -1 != open(f).read().find("GDCLASS"):
+				output_cpp += line('#include <{}>'.format(ff))
+		except Exception: pass
+		else: pass
+	output_cpp += line("#endif // AS_BIND_OBJECT_INCLUDE_CPP")
+	save_text_file(OBJECT_TARGET, output_cpp)
 
 if __name__ == '__main__':
 	CLASS_INFO = load_core_xml_doc(os.path.join(GODOT_ROOT, 'doc', 'classes'), list(value_classes.keys()))
 	generate_code_text()
+	# gen_object_include_cpp()
+
+
+
+
