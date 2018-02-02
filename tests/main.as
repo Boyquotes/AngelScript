@@ -1,6 +1,7 @@
 // #include "class.as"
-#include "godot.as"
-#include "benchmark.as"
+// #include "godot.as"
+#include "godot.gen.as"
+// #include "benchmark.as"
 
 void hello_world() {
 	print("Hello World! 你好，世界!");
@@ -13,7 +14,7 @@ void main() {
 	// test_object();
 	// test_reference();
 	// test_object_call();
-	benchmark_api_call();
+	// benchmark_api_call();
 	// benchmark_api_call2();
 	// benchmark_fibR();
 }

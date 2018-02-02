@@ -3,15 +3,15 @@
 #include <core/map.h>
 #include <core/string_db.h>
 #include <core/method_bind.h>
-
 #include <angelscript.h>
 #include <core/object.h>
-
 #include <core/reference.h>
 #include <scene/main/node.h>
 #include <scene/2d/sprite.h>
-
 #include <core/os/os.h>
+#include "../angelscript.h"
+
+#include <editor/doc/doc_data.h>
 
 namespace asb {
 
@@ -79,7 +79,7 @@ int define_object_types(asIScriptEngine *engine) {
 	// Object class as the base class of everything in Godot
 	r = engine->RegisterObjectBehaviour(OBJECT_CLS_CNAME, asBEHAVE_FACTORY, STR_G2C(OBJECT_CLS_REF_NAME + " f()"), asFUNCTION((object_factory<Object>)), asCALL_CDECL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "void free()", asFUNCTION((object_free<Object>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r <0, r);
-	// Object* --> Variant
+	// Object <==> Variant
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant opImplConv() const", asFUNCTION((object_convert<Object, Variant>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("Variant", STR_G2C(OBJECT_CLS_REF_NAME + " opImplConv() const"), asFUNCTION((value_convert<Variant, Object*>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	// Reference* ==> REF
@@ -277,53 +277,136 @@ String get_binding_script_content() {
 										"}";
 	static const String OBJECT_TEMPLATE = R"(
 	{class_doc}
-	class {class} : {inherits} {
+	class {class}{inherits} {
 		{methods}
 
 		protected void _make_instance() {
 			@ptr = bindings::instance_class(bindings::id_{class});
 		}
+		{extention}
 	})";
 
 	static const String REFERENCE_TEMPLATE = R"(
 	{class_doc}
-	class {class} : {inherits} {
+	class {class}{inherits} {
 		{methods}
 		protected void _make_instance() {
 			@ptr = (ref = bindings::instance_class(bindings::id_{class})).ptr();
 		}
+		{extention}
 	})";
 
 	static const String METHOD_TEMPLATE = R"(
 		{method_doc}
 		{return_type} {method_name}({params_list}) {qualifier}{
-			{return}ptr.godot_icall(bindings::id_{class}_{method_name}({params});
+			{method_extention}{return}ptr.godot_icall(bindings::id_{class}_{method_name}{params});
 		})";
+
+	static const String OBJECT_EXT_TEMPLATE = R"(
+		Variant opImplConv() const {
+			return @ptr;
+		}
+		protected bindings::Object@ ptr;
+	)";
+	static const String REFERENCE_EXT_TEMPLATE = R"(
+		Variant opImplConv() const {
+			return ref;
+		}
+		protected REF ref;
+	)";
+
+	List<String> keywords;
+	AngelScriptLanguage::get_singletion()->get_reserved_words(&keywords);
+
+//	DocData docs;
+//	docs.generate(true);
 
 	String classes = "";
 	const StringName ReferenceName = StringName("Reference");
 
 	const StringName *class_key = NULL;
 	while (class_key = ClassDB::classes.next(class_key)) {
+
 		ClassDB::ClassInfo * cls = ClassDB::classes.getptr(*class_key);
+
+
 		Dictionary class_info;
 		class_info["class"] = (String)(*class_key);
-		class_info["inherits"] = (String)(cls->inherits);
+		String inherits = cls->inherits;
+		class_info["inherits"] = inherits.empty() ? "" : String(" : ") + inherits;
 		class_info["class_doc"] = "";
-		String methods = "";
+		class_info["extention"] = "";
+		if ((*class_key) == "Object") {
+			class_info["extention"] = OBJECT_EXT_TEMPLATE;
+		} else if ((*class_key) == "Reference") {
+			class_info["extention"] = REFERENCE_EXT_TEMPLATE;
+		}
 
-		const StringName *method_key = NULL;
-		while (method_key = cls->method_map.next(method_key)) {
+		String methods = "";
+		List<MethodInfo> method_list;
+		ClassDB::get_method_list(*class_key, &method_list, true, false);
+		for (List<MethodInfo>::Element * E = method_list.front(); E; E = E->next()) {
+
+			const MethodInfo& mi = E->get();
 
 			Dictionary method_info;
 			method_info["class"] = (String)(*class_key);
+
+			String method_name = mi.name;
+			if (keywords.find(method_name) != NULL) {
+				method_name = method_name.capitalize();
+			}
+			method_info["method_name"] = method_name;
+
+			String ret_type = Variant::get_type_name(mi.return_val.type);
+			ret_type = (ret_type == "Object") ? mi.return_val.class_name : ret_type;
+			ret_type = (ret_type == Variant::get_type_name(Variant::NIL)) ? "void" : ret_type;
+			ret_type = ClassDB::class_exists(ret_type) ? ret_type + "@" : ret_type;
+			ret_type = ret_type.empty() ? "Variant" : ret_type;
+			method_info["return_type"] = ret_type;
+			method_info["return"] = ret_type == "void" ? "" : "return ";
+			method_info["method_extention"] = "";
+			method_info["qualifier"] = "";//mb->is_const() ? "const " : "";
 			method_info["method_doc"] = "";
-			method_info["return_type"] = "void";
-			method_info["method_name"] = (String)(*method_key);
-			method_info["params_list"] = "";
-			method_info["qualifier"] = "const ";
-			method_info["return"] = "return ";
-			method_info["params"] = "";
+
+			// Vector<StringName> arg_names = mb->get_argument_names();
+			String params_list = "";
+			String params = "";
+			for (int i = 0; i < mi.arguments.size(); i++) {
+
+				const PropertyInfo& pi = mi.arguments[i];
+
+				String arg_type = Variant::get_type_name(pi.type);
+				if (arg_type == "Object") {
+					String type = pi.class_name;
+					arg_type = type.empty() ? "Object@" : (String)pi.class_name + "@";
+				} else {
+					if (arg_type == "bool" || arg_type == "int" || arg_type == "float") {
+						arg_type = arg_type;
+					} else {
+						arg_type = String("const ") + arg_type + " &in";
+					}
+				}
+				arg_type = (arg_type == Variant::get_type_name(Variant::NIL)) ? "const Variant &in" : arg_type;
+
+				String arg_name = pi.name;
+				if (keywords.find(arg_name) != NULL) {
+					arg_name = arg_name.capitalize();
+				}
+
+				params_list += arg_type;
+				params_list += " ";
+				params_list += arg_name;
+				params += arg_name;
+				if (i < mi.arguments.size() -1) {
+					params += ", ";
+					params_list += ", ";
+				}
+			}
+
+			method_info["params_list"] = params_list;
+			method_info["params"] = params.empty() ? params : String(", ") + params;
+
 			methods += METHOD_TEMPLATE.format(method_info);
 		}
 

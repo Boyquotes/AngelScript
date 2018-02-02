@@ -110,8 +110,46 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"Variant": {
+		"param_constructors": [
+			['bool'],
+			['int'],
+			['uint'],
+			['float'],
+			['double'],
+			['String'],
+		],
 		"ext_copy_constructors": [],
-		"convertions": ['bool', 'int', 'float', 'double', 'String',  'Color', 'Vector2', 'Vector3']
+		"convertions": [
+			"bool",
+			"int",
+			"uint",
+			"float",
+			"double",
+			"String",
+			"StringName",
+			"Vector2",
+			"Rect2",
+			"Vector3",
+			"Plane",
+			"AABB",
+			"Quat",
+			"Basis",
+			"Transform",
+			"Transform2D",
+			"Color",
+			"NodePath",
+			"REF",
+			"RID",
+			"Dictionary",
+			"Array",
+			"PoolByteArray",
+			"PoolIntArray",
+			"PoolRealArray",
+			"PoolStringArray",
+			"PoolVector2Array",
+			"PoolVector3Array",
+			"PoolColorArray",
+		]
 	},
 }
 
@@ -236,6 +274,7 @@ def gen_value_behavoirs():
 	// {0} ==> {1}
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("{0}", "{1} opConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 
 	def bind_method(cls, md):
