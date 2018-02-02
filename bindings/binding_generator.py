@@ -79,6 +79,7 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"RID": {
+		"flags": "asOBJ_APP_CLASS_ALLINTS",
 		"ext_copy_constructors": [],
 		"convertions": ['Variant']
 	},

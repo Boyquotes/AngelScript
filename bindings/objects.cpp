@@ -99,15 +99,17 @@ int define_object_types(asIScriptEngine *engine) {
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant godot_icall(const uint &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(godot_icall), asCALL_GENERIC); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant godot_icall(const uint &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(godot_icall), asCALL_GENERIC); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant godot_icall(const uint &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(godot_icall), asCALL_GENERIC); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant godot_icall(const uint &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(godot_icall), asCALL_GENERIC); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant godot_icall(const uint &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(godot_icall), asCALL_GENERIC); ERR_FAIL_COND_V( r <0, r);
 	// exit godot namespace
 	r = engine->SetDefaultNamespace(""); ERR_FAIL_COND_V(r<0, r);
 
 	// FIXME: MOVE THIS to tools
-	if (FileAccessRef f = FileAccess::open("godot.gen.as", FileAccess::WRITE)) {
-		f->store_string(get_binding_script_content());
-		f->flush();
-		f->close();
-	}
+//	if (FileAccessRef f = FileAccess::open("godot.gen.as", FileAccess::WRITE)) {
+//		f->store_string(get_binding_script_content());
+//		f->flush();
+//		f->close();
+//	}
 
 	return r;
 }
@@ -228,6 +230,37 @@ void godot_icall(asIScriptGeneric * gen) {
 					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 9)),
 				};
 				ret = method->call(self, args, arg_count - MIN_ARG_COUNT, err);
+			} else if (arg_count == MIN_ARG_COUNT + 11) {
+				const Variant* args [] = {
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 1)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 2)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 3)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 4)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 5)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 6)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 7)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 8)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 9)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 10)),
+				};
+				ret = method->call(self, args, arg_count - MIN_ARG_COUNT, err);
+			} else if (arg_count == MIN_ARG_COUNT + 12) {
+				const Variant* args [] = {
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 1)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 2)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 3)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 4)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 5)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 6)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 7)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 8)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 9)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 10)),
+					static_cast<Variant*>(gen->GetArgObject(MIN_ARG_COUNT + 11)),
+				};
+				ret = method->call(self, args, arg_count - MIN_ARG_COUNT, err);
 			}
 		} else {
 			err.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
@@ -246,9 +279,10 @@ void godot_instance_class(asIScriptGeneric * gen) {
 	ERR_FAIL_COND(gen->GetArgCount() != 1);
 	const uint32_t* class_id = static_cast<const uint32_t*>(gen->GetArgAddress(0));
 	if (Map<uint32_t, ClassDB::ClassInfo*>::Element *E = class_cache.find(*class_id)) {
-
-
-		Object * obj = class_cache[*class_id]->creation_func();
+		Object * obj = NULL;
+		if (E->get() && E->get()->creation_func) {
+			obj = E->get()->creation_func();
+		}
 		gen->SetReturnObject(obj);
 	} else {
 		gen->SetReturnObject(NULL);
@@ -298,28 +332,59 @@ String get_binding_script_content() {
 
 	static const String METHOD_TEMPLATE = R"(
 		{method_doc}
-		{return_type} {method_name}({params_list}) {qualifier}{
-			{method_extention}{return}ptr.godot_icall(bindings::id_{class}_{method_name}{params});
+		{permission}{return_type} {method_name}({params_list}) {qualifier}{
+			{return}ptr.godot_icall(bindings::id_{class}_{method_name_raw}{params});
 		})";
-
+	static const String METHOD_RO_TEMPLATE = R"(
+		{method_doc}
+		{permission}{return_type} {method_name}({params_list}) {qualifier}{
+			{tmp_type} ret = ptr.godot_icall(bindings::id_{class}_{method_name_raw}{params});
+			{return} ret;
+		})";
+	static const String VMETHOD_TEMPLATE = R"(
+		{method_doc}
+		{permission}{return_type} {method_name}({params_list}) {qualifier}{
+			{return}
+		})";
 	static const String OBJECT_EXT_TEMPLATE = R"(
+		void free() {
+			ptr.free();
+		}
+
 		Variant opImplConv() const {
 			return @ptr;
 		}
+
+		void opAssign(const Variant &in ptr) {
+			@this.ptr = ptr;
+		}
+
+		Object() {
+			_make_instance();
+		}
+
 		protected bindings::Object@ ptr;
 	)";
 	static const String REFERENCE_EXT_TEMPLATE = R"(
 		Variant opImplConv() const {
 			return ref;
 		}
+
+		void opAssign(const Variant &in ref) {
+			@ptr = (this.ref = ref).ptr();
+		}
+
 		protected REF ref;
 	)";
 
+	static Map<String, String> vmethod_return_exp;
+	vmethod_return_exp["int"] = "return 0;";
+	vmethod_return_exp["void"] = "";
+	vmethod_return_exp["float"] = "return 0;";
+	vmethod_return_exp["bool"] = "return false;";
+
 	List<String> keywords;
 	AngelScriptLanguage::get_singletion()->get_reserved_words(&keywords);
-
-//	DocData docs;
-//	docs.generate(true);
 
 	String classes = "";
 	const StringName ReferenceName = StringName("Reference");
@@ -328,6 +393,10 @@ String get_binding_script_content() {
 	while (class_key = ClassDB::classes.next(class_key)) {
 
 		ClassDB::ClassInfo * cls = ClassDB::classes.getptr(*class_key);
+		// FIXME: How about this class ?
+		if (*class_key == "WeakRef") {
+			continue;
+		}
 
 
 		Dictionary class_info;
@@ -349,8 +418,17 @@ String get_binding_script_content() {
 
 			const MethodInfo& mi = E->get();
 
+			if (*(class_key) == "Object" && mi.name == "free") {
+				continue;
+			}
+
+			bool has_ret_val = false;
+			MethodBind **mb = cls->method_map.getptr(StringName(mi.name));
+			has_ret_val = (mb && *mb) && (*mb)->has_return();
+
 			Dictionary method_info;
 			method_info["class"] = (String)(*class_key);
+			method_info["method_name_raw"] = mi.name;
 
 			String method_name = mi.name;
 			if (keywords.find(method_name) != NULL) {
@@ -359,14 +437,17 @@ String get_binding_script_content() {
 			method_info["method_name"] = method_name;
 
 			String ret_type = Variant::get_type_name(mi.return_val.type);
-			ret_type = (ret_type == "Object") ? mi.return_val.class_name : ret_type;
-			ret_type = (ret_type == Variant::get_type_name(Variant::NIL)) ? "void" : ret_type;
+			ret_type = (ret_type == "Object") ? (String)mi.return_val.class_name : ret_type;
+			if (ret_type == Variant::get_type_name(Variant::NIL)) {
+				ret_type = has_ret_val ? "Variant" : "void";
+			}
 			ret_type = ClassDB::class_exists(ret_type) ? ret_type + "@" : ret_type;
 			ret_type = ret_type.empty() ? "Variant" : ret_type;
 			method_info["return_type"] = ret_type;
+			method_info["tmp_type"] = ret_type.replace("@", "");
 			method_info["return"] = ret_type == "void" ? "" : "return ";
-			method_info["method_extention"] = "";
-			method_info["qualifier"] = "";//mb->is_const() ? "const " : "";
+			method_info["qualifier"] = mi.flags & MethodFlags::METHOD_FLAG_CONST ? "const " : "";
+			method_info["permission"] = mi.name.begins_with("_") ? "protected " : "";
 			method_info["method_doc"] = "";
 
 			// Vector<StringName> arg_names = mb->get_argument_names();
@@ -377,6 +458,7 @@ String get_binding_script_content() {
 				const PropertyInfo& pi = mi.arguments[i];
 
 				String arg_type = Variant::get_type_name(pi.type);
+				arg_type = (arg_type == Variant::get_type_name(Variant::NIL)) ? "Variant" : arg_type;
 				if (arg_type == "Object") {
 					String type = pi.class_name;
 					arg_type = type.empty() ? "Object@" : (String)pi.class_name + "@";
@@ -387,7 +469,6 @@ String get_binding_script_content() {
 						arg_type = String("const ") + arg_type + " &in";
 					}
 				}
-				arg_type = (arg_type == Variant::get_type_name(Variant::NIL)) ? "const Variant &in" : arg_type;
 
 				String arg_name = pi.name;
 				if (keywords.find(arg_name) != NULL) {
@@ -403,16 +484,28 @@ String get_binding_script_content() {
 					params_list += ", ";
 				}
 			}
-
 			method_info["params_list"] = params_list;
 			method_info["params"] = params.empty() ? params : String(", ") + params;
 
-			methods += METHOD_TEMPLATE.format(method_info);
+			if (mi.flags & MethodFlags::METHOD_FLAG_VIRTUAL) {
+				if (vmethod_return_exp.has(ret_type)) {
+					method_info["return"] = vmethod_return_exp[ret_type];
+				} else if (ret_type.ends_with("@")) {
+					method_info["return"] = "return null;";
+				} else {
+					method_info["return"] = String("return ") + ret_type + "();";
+				}
+				methods += VMETHOD_TEMPLATE.format(method_info);
+			} else {
+				methods += ret_type.ends_with("@") ? METHOD_RO_TEMPLATE.format(method_info) : METHOD_TEMPLATE.format(method_info);
+			}
 		}
 
 		class_info["methods"] = methods;
 		if (ClassDB::is_parent_class(*class_key, ReferenceName))
 			classes += REFERENCE_TEMPLATE.format(class_info);
+		else if (*class_key == "Object")
+			classes += OBJECT_TEMPLATE.format(class_info).replace("bindings::instance_class(bindings::id_Object)", "bindings::Object();");
 		else
 			classes += OBJECT_TEMPLATE.format(class_info);
 	}

@@ -28,7 +28,7 @@ int _declare_value_types_gen(asIScriptEngine *engine) {
 	r = engine->RegisterObjectType("Color", sizeof(Color), asOBJ_APP_CLASS_ALLFLOATS|asOBJ_VALUE|asGetTypeTraits<Color>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("NodePath", sizeof(NodePath), asOBJ_VALUE|asGetTypeTraits<NodePath>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("REF", sizeof(REF), asOBJ_VALUE|asGetTypeTraits<REF>()); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectType("RID", sizeof(RID), asOBJ_VALUE|asGetTypeTraits<RID>()); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectType("RID", sizeof(RID), asOBJ_APP_CLASS_ALLINTS|asOBJ_VALUE|asGetTypeTraits<RID>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("Dictionary", sizeof(Dictionary), asOBJ_VALUE|asGetTypeTraits<Dictionary>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("Array", sizeof(Array), asOBJ_VALUE|asGetTypeTraits<Array>()); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectType("PoolByteArray", sizeof(PoolByteArray), asOBJ_VALUE|asGetTypeTraits<PoolByteArray>()); ERR_FAIL_COND_V(r<0, r);

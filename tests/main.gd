@@ -1,9 +1,10 @@
 extends SceneTree
-const CWD = "F:/work/godot/modules/angelscript/tests"
+const CWD = "/home/geequlim/Documents/Workspace/Develop/Godot/modules/angelscript/tests"
 func _init():
 	# test_fibR()
 	# test_api2()
-	test_api()
+	# test_api()
+	test_resource_api()
 	print("--------------------------------")
 	var as = AngelScriptRunner.new()
 	as.run(str(CWD, '/', 'main.as'))
@@ -37,4 +38,18 @@ func test_api():
 		s.set_position(Vector2(100, 100))
 		s.set_name("Hello")
 		s.free()
+	printt("GDScript:", OS.get_ticks_msec() - start)
+
+func test_resource_api():
+	var start = OS.get_ticks_msec()
+	for i in range(100000):
+		var c = Control.new()
+		var theme = Theme.new()
+		theme.set_name("My Beautiful Theme");
+		var tex = ImageTexture.new()
+		tex.set_name("xxx.png");
+		theme.set_icon("Button", "Normal", tex)
+		c.set_theme(theme)
+		var name = c.get_theme().get_icon("Button", "Normal").get_name()
+		c.free()
 	printt("GDScript:", OS.get_ticks_msec() - start)
