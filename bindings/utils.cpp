@@ -148,8 +148,10 @@ String get_binding_script_content() {
 				method_info["method_doc"] = "";
 				// Parameters
 				{
+
 					String params_list = "";
 					String params = "";
+					const int arg_val_start_idx = mi.arguments.size() - mi.default_arguments.size();
 					for (int i = 0; i < mi.arguments.size(); i++) {
 						const PropertyInfo& pi = mi.arguments[i];
 						String arg_type = Variant::get_type_name(pi.type);
@@ -174,6 +176,11 @@ String get_binding_script_content() {
 						params_list += " ";
 						params_list += arg_name;
 						params += arg_name;
+
+						if (i >= arg_val_start_idx) {
+							params_list += String("=") + mi.default_arguments[i-arg_val_start_idx].get_construct_string();
+						}
+
 						if (i < mi.arguments.size() -1) {
 							params += ", ";
 							params_list += ", ";
@@ -209,6 +216,7 @@ String get_binding_script_content() {
 	Dictionary file_info;
 	file_info["classes"] = classes;
 	script_bindings = FILE_TEMPLATE.format(file_info);
+	/* FIXME: BUG with String::format ? */ script_bindings = script_bindings.replace("\\\\\\\\\\\\\\", "");
 	return script_bindings;
 }
 
