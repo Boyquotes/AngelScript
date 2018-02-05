@@ -47,15 +47,15 @@ void benchmark_resource_api() {
 // 	print("AngelScript:    " + String(duration));
 // }
 
+int fibR(int n) {
+    if (n < 2) return n;
+    return (fibR(n-2) + fibR(n-1));
+}
 
-// int fibR(int n) {
-//     if (n < 2) return n;
-//     return (fibR(n-2) + fibR(n-1));
-// }
-
-// void benchmark_fibR() {
-// 	uint start = get_tick_msec();
-// 	fibR(34);
-// 	Variant duration = get_tick_msec() - start;
-// 	print("AngelScript:    " + String(duration));
-// }
+void benchmark_fibR() {
+	uint start = get_tick_msec();
+	fibR(34);
+	Variant duration = get_tick_msec() - start;
+	String sd = duration;
+	print("AngelScript:    " + sd);
+}

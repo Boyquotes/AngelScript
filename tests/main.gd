@@ -1,13 +1,14 @@
 extends SceneTree
-const CWD = "/home/geequlim/Documents/Workspace/Develop/Godot/modules/angelscript/tests"
+const CWD = ""
 func _init():
 	# test_fibR()
 	# test_api2()
+	# test_fibR()
 	# test_api()
-	test_resource_api()
+	# test_resource_api()
 	print("--------------------------------")
 	var as = AngelScriptRunner.new()
-	as.run(str(CWD, '/', 'main.as'))
+	as.run(str(CWD, 'main.as'))
 	print("--------------------------------")
 	quit()
 

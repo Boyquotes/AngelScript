@@ -19,3 +19,26 @@ void test_object_life_cycle() {
 	}
 	obj.method();
 }
+
+class PureClass {
+	PureClass() {
+		num = 0;
+	}
+
+	PureClass(int n) {
+		num = n;
+	}
+
+	private int num;
+}
+
+void benchmark_pure_script_class() {
+	uint start = get_tick_msec();
+
+	for (int i=0; i<100000; i++) {
+		PureClass o(i);
+	}
+	Variant duration = get_tick_msec() - start;
+	String sd = duration;
+	print("AngelScript:    " + sd);
+}

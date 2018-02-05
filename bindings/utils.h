@@ -116,5 +116,12 @@ P* object_convert(T* p_this) {
 	return Object::cast_to<P>(p_this);
 }
 
+
+#ifdef TOOLS_ENABLED
+
+String get_binding_script_content();
+
+#endif
+
 }
 #endif // AS_BINDING_UTILS_H

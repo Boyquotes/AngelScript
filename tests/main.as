@@ -1,6 +1,4 @@
-// #include "class.as"
-// #include "godot.as"
-#include "godot.as"
+#include "class.as"
 #include "benchmark.as"
 
 void hello_world() {
@@ -9,6 +7,8 @@ void hello_world() {
 
 void main() {
 	// test_resource();
+	// benchmark_fibR();
 	// benchmark_api_call();
 	benchmark_resource_api();
+	// benchmark_pure_script_class();
 }
