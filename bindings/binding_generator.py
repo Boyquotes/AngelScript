@@ -12,7 +12,12 @@ OBJECT_TARGET = "objects.include.gen.cpp"
 value_classes = {
 	"String": {
 		"ext_copy_constructors": [],
-		"convertions": ['StringName', 'Variant']
+		"convertions": ['StringName', 'Variant'],
+		"ignore_methods": [
+			# The ignored methods should be exported manually
+			"begins_with", "find", "hash", "replace", "to_int",
+			"to_ascii", "to_utf8", # TODO
+		]
 	},
 	"StringName": {
 		"ext_copy_constructors": ['String'],
@@ -23,7 +28,10 @@ value_classes = {
 			['float', 'float']
 		],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"ignore_methods": [
+			"linear_interpolate"
+		]
 	},
 	"Rect2": {
 		"param_constructors": [
@@ -53,15 +61,24 @@ value_classes = {
 	},
 	"Basis": {
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"ignore_methods": [
+			"rotated"
+		]
 	},
 	"Transform": {
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"ignore_methods": [
+			"xform", "xform_inv"
+		]
 	},
 	"Transform2D": {
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"ignore_methods": [
+			"xform", "xform_inv"
+		]
 	},
 	"Color": {
 		"param_constructors": [
@@ -84,13 +101,17 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"Dictionary": {
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
 	},
 	"Array": {
 		"convertions": ['Variant']
 	},
 	"PoolByteArray": {
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"ignore_methods": [
+			# TODO
+			"compress", "decompress", "get_string_from_ascii", "get_string_from_utf8"
+		]
 	},
 	"PoolIntArray": {
 		"convertions": ['Variant']
@@ -275,38 +296,36 @@ def gen_value_behavoirs():
 	// {0} ==> {1}
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
-	r = engine->RegisterObjectMethod("{0}", "{1} opConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 
 	def bind_method(cls, md):
 		def gen_signature(md):
 			qualifiers = ' const' if md['qualifiers'] == 'const' else ''
 			args = ''
+			idx = 0
 			for arg in md['arguments']:
 				type = arg['type']
+				type = type if type != "var" else "Variant"
+				type = type if type != "Object" else "bindings::Object@"
 				if type in value_classes:
 					type = 'const '+ type +' &in'
 				args += type
+				if 'default_value' in arg and len(arg['default_value']) > 0:
+					val = arg['default_value']
+					val = "true" if val == "True" else val
+					val = "false" if val == "False" else val
+					if type == "const String &in" and not val.startswith("\""):
+						val = '\\"' + val + '\\"'
+					args += ' arg' + str(idx) + '=' + val
 				if arg != md['arguments'][-1]:
 					args +=', '
-			return '{0} {1}({2}){3}'.format(md['return_type'], md['name'], args, qualifiers)
-		def gen_bind_signature(md):
-			qualifiers = ' const' if md['qualifiers'] == 'const' else ''
-			args = ''
-			for arg in md['arguments']:
-				type = arg['type']
-				if type in value_classes:
-					type = 'const '+ type +'&'
-				args += type
-				if arg != md['arguments'][-1]:
-					args +=', '
-			args = '(' + args + ')' if len(args) else '(void)'
-			return args + qualifiers + ', ' + md['return_type']
-		# constructors
-		if md['name'] == cls:
-			return ''
+				idx += 1
+			ret_type = md['return_type'] if len(md['return_type']) > 0 else "void"
+			ret_type = ret_type if ret_type != 'var' else "Variant"
+			return '{0} {1}({2}){3}'.format(ret_type, md['name'], args, qualifiers)
+		if md['name'] == cls or ('ignore_methods' in value_classes[cls] and md['name'] in value_classes[cls]['ignore_methods']): return ''
 		else:
-			return '\tr = engine->RegisterObjectMethod("{0}", "{1}", asMETHODPR({0}, {2}, {3}), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);\n'.format(cls, gen_signature(md), md['name'], gen_bind_signature(md))
+			return '\tr = engine->RegisterObjectMethod("{0}", "{1}", asMETHOD({0}, {2}), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);\n'.format(cls, gen_signature(md), md['name'])
 
 
 	for cls in value_classes:
@@ -328,13 +347,13 @@ def gen_value_behavoirs():
 		if cfg and 'convertions' in cfg:
 			for ext_type in cfg['convertions']:
 				text += convt_template.format(cls,ext_type)
-		# if cls in CLASS_INFO:
-		# 	cls_info = CLASS_INFO[cls]
-		# 	if 'methods' in cls_info:
-		# 		if len(cls_info['methods']) > 0:
-		# 			text += '\t// {0} methods\n'.format(cls)
-		# 		for md in cls_info['methods']:
-		# 			text += bind_method(cls, md)
+		if cls in CLASS_INFO:
+			cls_info = CLASS_INFO[cls]
+			if 'methods' in cls_info:
+				if len(cls_info['methods']) > 0:
+					text += '\t// {0} methods\n'.format(cls)
+				for md in cls_info['methods']:
+					text += bind_method(cls, md)
 	return wrapp_as_register_function('_define_value_types_gen', text)
 
 def generate_code_text():

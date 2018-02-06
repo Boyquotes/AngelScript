@@ -3,6 +3,9 @@
 #include <core/ustring.h>
 #include <core/map.h>
 #include <core/os/copymem.h>
+#include <core/math/math_2d.h>
+#include <core/math/matrix3.h>
+#include <core/math/transform.h>
 
 namespace asb {
 
@@ -73,6 +76,21 @@ int define_value_types(asIScriptEngine *engine) {
 	int r = 0;
 	r = register_string(engine); ERR_FAIL_COND_V(r<0, r);
 	r = _define_value_types_gen(engine);  ERR_FAIL_COND_V(r<0, r);
+	// Overloads Methods
+	r = engine->RegisterObjectMethod("Vector2", "Vector2 linear_interpolate(const Vector2 &in, float)", asMETHODPR(Vector2, linear_interpolate, (const Vector2 &, real_t) const, Vector2), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Basis", "Basis rotated(const Vector3 &in, float)", asMETHODPR(Basis, rotated, (const Vector3 &, real_t p_phi) const, Basis), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Basis", "Basis rotated(const Vector3 &in)", asMETHODPR(Basis, rotated, (const Vector3 &) const, Basis), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform", "Vector3 xform(const Vector3 &in)", asMETHODPR(Transform, xform, (const Vector3 &) const, Vector3), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform", "Plane xform(const Plane &in)", asMETHODPR(Transform, xform, (const Plane &) const, Plane), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform", "AABB xform(const AABB &in)", asMETHODPR(Transform, xform, (const AABB &) const, AABB), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform", "Vector3 xform_inv(const Vector3 &in)", asMETHODPR(Transform, xform_inv, (const Vector3 &) const, Vector3), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform", "Plane xform_inv(const Plane &in)", asMETHODPR(Transform, xform_inv, (const Plane &) const, Plane), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform", "AABB xform_inv(const AABB &in)", asMETHODPR(Transform, xform_inv, (const AABB &) const, AABB), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform2D", "Vector2 xform(const Vector2 &in)", asMETHODPR(Transform2D, xform, (const Vector2 &) const, Vector2), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform2D", "Rect2 xform(const Rect2 &in)", asMETHODPR(Transform2D, xform, (const Rect2 &) const, Rect2), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform2D", "Vector2 xform_inv(const Vector2 &in)", asMETHODPR(Transform2D, xform_inv, (const Vector2 &) const, Vector2), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod("Transform2D", "Rect2 xform_inv(const Rect2 &in)", asMETHODPR(Transform2D, xform_inv, (const Rect2 &) const, Rect2), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);
+
 	return r;
 }
 
@@ -93,13 +111,16 @@ int register_string(asIScriptEngine *engine) {
 	// Factory
 	r = engine->RegisterStringFactory("String", &string_factory); ERR_FAIL_COND_V( r <0, r);
 	// Operators
-	r = engine->RegisterObjectMethod("String", "String &opAddAssign(const String &in)", asMETHODPR(String, operator+=, (const String&), String&), asCALL_THISCALL);     ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "bool opEquals(const String &in) const", asMETHODPR(String, operator==, (const String&) const, bool), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "int opCmp(const String &in) const", asFUNCTION(string_compare), asCALL_CDECL_OBJFIRST);                              ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "String opAdd(const String &in) const", asMETHODPR(String, operator+, (const String&) const, String), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
-	// Methods
-	r = engine->RegisterObjectMethod("String", "int length() const",asMETHODPR(String, length, (void) const, int), asCALL_THISCALL);    ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("String", "bool empty() const", asMETHODPR(String, empty, (void) const, bool), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("String", "String &opAddAssign(const String &in)", asMETHODPR(String, operator+=, (const String&), String&), asCALL_THISCALL);     ERR_FAIL_COND_V( r <0, r);
+	// Overloads Methods
+	r = engine->RegisterObjectMethod("String", "bool begins_with() const",asMETHODPR(String, begins_with, (const String &) const, bool), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("String", "int find(const String &in, int) const", asMETHODPR(String, find, (const String &, int) const, int), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("String", "uint hash() const", asMETHODPR(String, hash, () const, uint32_t), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("String", "String replace(const String &in, const String &in) const", asMETHODPR(String, replace, (const String &, const String&) const, String), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);
+	r = engine->RegisterObjectMethod("String", "int to_int() const", asMETHODPR(String, to_int, () const, int), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);
 	return r;
 }
 

@@ -5,6 +5,7 @@
 #include <angelscript.h>
 #include <core/os/os.h>
 
+#include "utils.h"
 #include "value_types.h"
 #include "objects.h"
 
@@ -35,6 +36,14 @@ int bind_angelscript_language(asIScriptEngine *engine) {
 	r = engine->RegisterGlobalFunction("void print(const String &in)", asFUNCTION(angelscript_print), asCALL_CDECL);			  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterGlobalFunction("uint get_tick_msec()", asFUNCTION(angelscript_get_tick_msec), asCALL_CDECL);			  ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterGlobalFunction("void check(const String &in, bool)", asFUNCTION(angelscript_debug_check), asCALL_CDECL);  ERR_FAIL_COND_V( r <0, r);
+
+	// FIXME: MOVE THIS to tools
+//	if (FileAccessRef f = FileAccess::open("godot.gen.as", FileAccess::WRITE)) {
+//		f->store_string(asb::get_binding_script_content());
+//		f->flush();
+//		f->close();
+//	}
+
 	return r;
 }
 

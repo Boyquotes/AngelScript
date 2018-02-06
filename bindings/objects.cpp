@@ -11,8 +11,6 @@
 #include <core/os/os.h>
 #include "../angelscript.h"
 
-#include <editor/doc/doc_data.h>
-
 namespace asb {
 
 // Convert String to const char *
@@ -103,13 +101,6 @@ int define_object_types(asIScriptEngine *engine) {
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant godot_icall(const uint &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in, const Variant &in)", asFUNCTION(godot_icall), asCALL_GENERIC); ERR_FAIL_COND_V( r <0, r);
 	// exit godot namespace
 	r = engine->SetDefaultNamespace(""); ERR_FAIL_COND_V(r<0, r);
-
-	// FIXME: MOVE THIS to tools
-	// if (FileAccessRef f = FileAccess::open("godot.gen.as", FileAccess::WRITE)) {
-	// 	f->store_string(get_binding_script_content());
-	// 	f->flush();
-	// 	f->close();
-	// }
 
 	return r;
 }

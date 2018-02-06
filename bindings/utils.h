@@ -84,6 +84,19 @@ static P value_convert(T *p_this) {
 }
 
 /**
+ * Compare function
+ */
+template<class T>
+int value_compare(const T &a, const T &b) {
+	int cmp = 1;
+	if( a < b )
+		cmp = -1;
+	else if( a == b )
+		cmp = 0;
+	return cmp;
+}
+
+/**
  * Construct objects
  */
 template<class T>
