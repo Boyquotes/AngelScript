@@ -1,4 +1,5 @@
 #include "value_types.h"
+#include "utils.h"
 #include <angelscript.h>
 #include <core/ustring.h>
 #include <core/map.h>
@@ -110,11 +111,6 @@ int register_string(asIScriptEngine *engine) {
 	int r = 0;
 	// Factory
 	r = engine->RegisterStringFactory("String", &string_factory); ERR_FAIL_COND_V( r <0, r);
-	// Operators
-	r = engine->RegisterObjectMethod("String", "bool opEquals(const String &in) const", asMETHODPR(String, operator==, (const String&) const, bool), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("String", "int opCmp(const String &in) const", asFUNCTION(string_compare), asCALL_CDECL_OBJFIRST);                              ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("String", "String opAdd(const String &in) const", asMETHODPR(String, operator+, (const String&) const, String), asCALL_THISCALL);  ERR_FAIL_COND_V( r <0, r);
-	r = engine->RegisterObjectMethod("String", "String &opAddAssign(const String &in)", asMETHODPR(String, operator+=, (const String&), String&), asCALL_THISCALL);     ERR_FAIL_COND_V( r <0, r);
 	// Overloads Methods
 	r = engine->RegisterObjectMethod("String", "bool begins_with() const",asMETHODPR(String, begins_with, (const String &) const, bool), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod("String", "int find(const String &in, int) const", asMETHODPR(String, find, (const String &, int) const, int), asCALL_THISCALL);   ERR_FAIL_COND_V( r <0, r);

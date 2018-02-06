@@ -9,8 +9,27 @@ ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 VALUE_TARGET = "value_types.gen.cpp"
 OBJECT_TARGET = "objects.include.gen.cpp"
 
+OPERATOR_MAP = {
+	'OP_NEG' : '\tr = engine->RegisterObjectMethod("{0}", "bool opNeg() const", asMETHODPR({0}, operator-, () const, {0}), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_EQUALS' : '\tr = engine->RegisterObjectMethod("{0}", "bool opEquals(const {0} &in) const", asMETHODPR({0}, operator==, (const {0}&) const, bool), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_COMPARE' : '\tr = engine->RegisterObjectMethod("{0}", "int opCmp(const {0} &in) const", asFUNCTION((value_compare<{0}, {0}>)), asCALL_CDECL_OBJFIRST); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_ADD' : '\tr = engine->RegisterObjectMethod("{0}", "{0} opAdd(const {0} &in) const", asMETHODPR({0}, operator+, (const {0}&) const, {0}), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_ADD_ASSIGN_SELF' : '\tr = engine->RegisterObjectMethod("{0}", "{0}& opAddAssign(const {0} &in)", asMETHODPR({0}, operator+=, (const {0}&), {0}&), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_ADD_ASSIGN_VOID' : '\tr = engine->RegisterObjectMethod("{0}", "void opAddAssign(const {0} &in)", asMETHODPR({0}, operator+=, (const {0}&), void), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_MINUS' : '\tr = engine->RegisterObjectMethod("{0}", "{0} opSub(const {0} &in) const", asMETHODPR({0}, operator-, (const {0}&) const, {0}), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_MINUS_ASSIGN_SELF' : '\tr = engine->RegisterObjectMethod("{0}", "{0}& opSubAssign(const {0} &in)", asMETHODPR({0}, operator-=, (const {0}&), {0}&), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_MINUS_ASSIGN_VOID' : '\tr = engine->RegisterObjectMethod("{0}", "void opSubAssign(const {0} &in)", asMETHODPR({0}, operator-=, (const {0}&), void), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_MULTIPLY' : '\tr = engine->RegisterObjectMethod("{0}", "{0} opMul(const {0} &in) const", asMETHODPR({0}, operator*, (const {0}&) const, {0}), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_MULTIPLY_ASSIGN_SELF' : '\tr = engine->RegisterObjectMethod("{0}", "{0}& opMulAssign(const {0} &in)", asMETHODPR({0}, operator*=, (const {0}&), {0}&), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_MULTIPLY_ASSIGN_VOID' : '\tr = engine->RegisterObjectMethod("{0}", "void opMulAssign(const {0} &in)", asMETHODPR({0}, operator*=, (const {0}&), void), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_DIVID' : '\tr = engine->RegisterObjectMethod("{0}", "{0} opDiv(const {0} &in) const", asMETHODPR({0}, operator/, (const {0}&) const, {0}), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_DIVID_ASSIGN_SELF' : '\tr = engine->RegisterObjectMethod("{0}", "{0}& opDivAssign(const {0} &in)", asMETHODPR({0}, operator/=, (const {0}&), {0}&), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+	'OP_DIVID_ASSIGN_VOID' : '\tr = engine->RegisterObjectMethod("{0}", "void opDivAssign(const {0} &in)", asMETHODPR({0}, operator/=, (const {0}&), void), asCALL_THISCALL); ERR_FAIL_COND_V( r <0, r);\n',
+}
+
 value_classes = {
 	"String": {
+		'operators': ['OP_EQUALS', 'OP_COMPARE', 'OP_ADD', 'OP_ADD_ASSIGN_SELF'],
 		"ext_copy_constructors": [],
 		"convertions": ['StringName', 'Variant'],
 		"ignore_methods": [
@@ -24,6 +43,7 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"Vector2": {
+		'operators': ['OP_EQUALS', 'OP_COMPARE','OP_ADD', 'OP_ADD_ASSIGN_VOID', 'OP_MINUS', 'OP_MINUS_ASSIGN_VOID', 'OP_MULTIPLY', 'OP_MULTIPLY_ASSIGN_VOID', 'OP_DIVID'],
 		"param_constructors": [
 			['float', 'float']
 		],
@@ -35,12 +55,14 @@ value_classes = {
 	},
 	"Rect2": {
 		"param_constructors": [
-			['float', 'float', 'float', 'float']
+			['float', 'float', 'float', 'float'],
+			['Vector2', 'Vector2'],
 		],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant']
 	},
 	"Vector3": {
+		'operators': ['OP_EQUALS', 'OP_COMPARE','OP_ADD', 'OP_ADD_ASSIGN_SELF', 'OP_MINUS', 'OP_MINUS_ASSIGN_SELF', 'OP_MULTIPLY', 'OP_MULTIPLY_ASSIGN_SELF', 'OP_DIVID', 'OP_DIVID_ASSIGN_SELF'],
 		"param_constructors": [
 			['float', 'float', 'float']
 		],
@@ -48,39 +70,74 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"Plane": {
+		'operators': ['OP_EQUALS', 'OP_NEG'],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"param_constructors": [
+			['float', 'float', 'float', 'float'],
+			['Vector3', 'float'],
+			['Vector3', 'Vector3'],
+			#  TODO: Enum params
+			# ['Vector3', 'Vector3', 'Vector3', 'int'],
+		],
 	},
 	"AABB": {
+		'operators': ['OP_EQUALS'],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"param_constructors": [
+			['Vector3', 'Vector3'],
+		],
 	},
 	"Quat": {
+		'operators': ['OP_EQUALS', 'OP_NEG', 'OP_ADD', 'OP_ADD_ASSIGN_VOID', 'OP_MINUS', 'OP_MINUS_ASSIGN_VOID'],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"param_constructors": [
+			['float', 'float', 'float', 'float'],
+			['Vector3', 'float'],
+			['Vector3', 'Vector3'],
+		],
 	},
 	"Basis": {
+		'operators': ['OP_EQUALS', 'OP_ADD', 'OP_ADD_ASSIGN_VOID', 'OP_MINUS', 'OP_MINUS_ASSIGN_VOID', 'OP_MULTIPLY', 'OP_MULTIPLY_ASSIGN_VOID'],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant'],
 		"ignore_methods": [
 			"rotated"
-		]
+		],
+		"param_constructors": [
+			['float', 'float', 'float', 'float', 'float', 'float', 'float', 'float', 'float'],
+			['Quat'],
+			['Vector3'],
+			['Vector3', 'float'],
+		],
 	},
 	"Transform": {
+		'operators': ['OP_EQUALS', 'OP_MULTIPLY', 'OP_MULTIPLY_ASSIGN_VOID'],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant'],
 		"ignore_methods": [
 			"xform", "xform_inv"
-		]
+		],
+		"param_constructors": [
+			['Basis', 'Vector3'],
+		],
 	},
 	"Transform2D": {
+		'operators': ['OP_EQUALS', 'OP_MULTIPLY', 'OP_MULTIPLY_ASSIGN_VOID'],
 		"flags": 'asOBJ_APP_CLASS_ALLFLOATS',
 		"convertions": ['Variant'],
 		"ignore_methods": [
 			"xform", "xform_inv"
-		]
+		],
+		"param_constructors": [
+			['float', 'float', 'float', 'float', 'float', 'float'],
+			['float', 'Vector2'],
+		],
 	},
 	"Color": {
+		'operators': ['OP_EQUALS', 'OP_COMPARE','OP_ADD', 'OP_ADD_ASSIGN_VOID', 'OP_MINUS', 'OP_MINUS_ASSIGN_VOID', 'OP_MULTIPLY', 'OP_MULTIPLY_ASSIGN_VOID', 'OP_DIVID', 'OP_DIVID_ASSIGN_VOID'],
 		"param_constructors": [
 			['float', 'float', 'float'],
 			['float', 'float', 'float', 'float'],
@@ -89,7 +146,10 @@ value_classes = {
 		"convertions": ['Variant']
 	},
 	"NodePath": {
-		"convertions": ['Variant']
+		"convertions": ['Variant'],
+		"ext_copy_constructors": [
+			"String"
+		],
 	},
 	"REF": {
 		"ext_copy_constructors": [],
@@ -104,6 +164,7 @@ value_classes = {
 		"convertions": ['Variant'],
 	},
 	"Array": {
+		'operators': ['OP_EQUALS'],
 		"convertions": ['Variant']
 	},
 	"PoolByteArray": {
@@ -287,7 +348,7 @@ def gen_value_behavoirs():
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {0} &in)", asFUNCTION((value_op_assign<{0}, {0}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 	param_constructor_tmp = '''\
-	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f({1})", asFUNCTION((value_constructor<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f({1})", asFUNCTION((value_constructor<{0}, {2}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
 	extc_template = '''\
 	r = engine->RegisterObjectBehaviour("{0}", asBEHAVE_CONSTRUCT, "void f(const {1} &in)", asFUNCTION((value_copy_constructor<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
@@ -297,7 +358,6 @@ def gen_value_behavoirs():
 	r = engine->RegisterObjectMethod("{0}", "{0} &opAssign(const {1} &in)", asFUNCTION((value_op_assign<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("{0}", "{1} opImplConv() const", asFUNCTION((value_convert<{0}, {1}>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 '''
-
 	def bind_method(cls, md):
 		def gen_signature(md):
 			qualifiers = ' const' if md['qualifiers'] == 'const' else ''
@@ -327,7 +387,6 @@ def gen_value_behavoirs():
 		else:
 			return '\tr = engine->RegisterObjectMethod("{0}", "{1}", asMETHOD({0}, {2}), asCALL_THISCALL); ERR_FAIL_COND_V(r<0, r);\n'.format(cls, gen_signature(md), md['name'])
 
-
 	for cls in value_classes:
 		cfg = value_classes[cls]
 		text += cdka_template.format(cls)
@@ -339,14 +398,20 @@ def gen_value_behavoirs():
 				params = ''
 				idx = 0
 				for p in plist:
+					if p in value_classes:
+						p = "const " + p + " &in"
 					params += p
 					if idx < len(plist) - 1:
 						params += ', '
 					idx += 1
-				text += param_constructor_tmp.format(cls, params)
+				text += param_constructor_tmp.format(cls, params, params.replace(" &in", "&"))
 		if cfg and 'convertions' in cfg:
 			for ext_type in cfg['convertions']:
 				text += convt_template.format(cls,ext_type)
+		if cfg and 'operators' in cfg and len(cfg['operators']) > 0:
+			text += '\t// Operators\n'
+			for op in cfg['operators']:
+				text += OPERATOR_MAP[op].format(cls)
 		if cls in CLASS_INFO:
 			cls_info = CLASS_INFO[cls]
 			if 'methods' in cls_info:
@@ -377,26 +442,9 @@ def generate_code_text():
 	output_cpp += line('}')
 	save_text_file(VALUE_TARGET, output_cpp)
 
-def gen_object_include_cpp():
-	output_cpp = line("#ifndef AS_BIND_OBJECT_INCLUDE_CPP")
-	output_cpp += line("#define AS_BIND_OBJECT_INCLUDE_CPP")
-	IGNORED_FOLDERS = ["drivers", "doc", "bin", "misc", "platform", "thirdparty"]
-	for f in glob_path(GODOT_ROOT, "**.h"):
-		ff = f.replace("\\", '/').replace(GODOT_ROOT + '/', '')
-		if ff.split('/')[0] in IGNORED_FOLDERS:
-			continue
-		try:
-			if -1 != open(f).read().find("GDCLASS"):
-				output_cpp += line('#include <{}>'.format(ff))
-		except Exception: pass
-		else: pass
-	output_cpp += line("#endif // AS_BIND_OBJECT_INCLUDE_CPP")
-	save_text_file(OBJECT_TARGET, output_cpp)
-
 if __name__ == '__main__':
 	CLASS_INFO = load_core_xml_doc(os.path.join(GODOT_ROOT, 'doc', 'classes'), list(value_classes.keys()))
 	generate_code_text()
-	# gen_object_include_cpp()
 
 
 

@@ -42,6 +42,31 @@ void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, T *p_this) {
 	memnew_placement(p_this, T(p1, p2, p3, p4));
 }
 
+template<class T, class P1, class P2, class P3, class P4, class P5>
+void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3, p4, p5));
+}
+
+template<class T, class P1, class P2, class P3, class P4, class P5, class P6>
+void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3, p4, p5, p6));
+}
+
+template<class T, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
+void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3, p4, p5, p6, p7));
+}
+
+template<class T, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
+void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3, p4, p5, p6, p7, p8));
+}
+
+template<class T, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
+void value_constructor(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, T *p_this) {
+	memnew_placement(p_this, T(p1, p2, p3, p4, p5, p6, p7, p8, p9));
+}
+
 /**
  * Destructor of value types
  */
@@ -86,12 +111,12 @@ static P value_convert(T *p_this) {
 /**
  * Compare function
  */
-template<class T>
-int value_compare(const T &a, const T &b) {
+template<class T, class P>
+int value_compare(const T &self, const P &another) {
 	int cmp = 1;
-	if( a < b )
+	if( self < another )
 		cmp = -1;
-	else if( a == b )
+	else if( self == another )
 		cmp = 0;
 	return cmp;
 }
