@@ -1,11 +1,10 @@
 extends SceneTree
 const CWD = ""
 func _init():
-	# test_fibR()
 	# test_api2()
-	# test_fibR()
-	# test_api()
-	# test_resource_api()
+	test_fibR()
+	test_api()
+	test_resource_api()
 	print("--------------------------------")
 	var as = AngelScriptRunner.new()
 	as.run(str(CWD, 'main.as'))
@@ -46,9 +45,9 @@ func test_resource_api():
 	for i in range(100000):
 		var c = Control.new()
 		var theme = Theme.new()
-		theme.set_name("My Beautiful Theme");
+		theme.set_name("My Beautiful Theme")
 		var tex = ImageTexture.new()
-		tex.set_name("xxx.png");
+		tex.set_name("xxx.png")
 		theme.set_icon("Button", "Normal", tex)
 		c.set_theme(theme)
 		var name = c.get_theme().get_icon("Button", "Normal").get_name()

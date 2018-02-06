@@ -33,18 +33,27 @@ String get_binding_script_content() {
 	{class_doc}
 	class {class}{inherits} {
 		{methods}
-
-		protected void _make_instance() { @ptr = bindings::instance_class(bindings::id_{class}); }
 		{extention}
+	}
+	namespace {class} {
+		godot::{class}@ new() {
+			godot::{class} obj = bindings::instance_class(bindings::id_{class});
+			return obj;
+		}
 	})";
 
 	static const String REFERENCE_TEMPLATE = R"(
 	{class_doc}
 	class {class}{inherits} {
 		{methods}
-
-		protected void _make_instance() { @ptr = (ref = bindings::instance_class(bindings::id_{class})).ptr(); }
 		{extention}
+	}
+	namespace {class} {
+		godot::{class}@ new() {
+			REF ref = bindings::instance_class(bindings::id_{class});
+			godot::{class} obj = ref;
+			return obj;
+		}
 	})";
 
 	static const String METHOD_TEMPLATE = R"(
@@ -64,18 +73,19 @@ String get_binding_script_content() {
 			{return}
 		})";
 	static const String OBJECT_EXT_TEMPLATE = R"(
-		Variant opImplConv() const { return @ptr; }
-		protected void opAssign(const Variant &in ptr) { @this.ptr = ptr; }
-
-		Object() { _make_instance(); }
 		void free() { ptr.free(); }
+
+		Variant opImplConv() const { return @ptr; }
+		void opAssign(const Variant &in ptr) { @this.ptr = ptr; }
+		bool opEquals(const Object@ obj) { return ptr is obj.ptr; }
 
 		protected bindings::Object@ ptr;
 	)";
 	static const String REFERENCE_EXT_TEMPLATE = R"(
+		private void free() {}
+
 		Variant opImplConv() const { return ref; }
 		void opAssign(const Variant &in ref) { @ptr = (this.ref = ref).ptr(); }
-		private void free() {}
 
 		protected REF ref;
 	)";
