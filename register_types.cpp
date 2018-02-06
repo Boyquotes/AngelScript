@@ -6,6 +6,7 @@
 #include "angelscript.h"
 #include "bindings/utils.h"
 #include <scriptbuilder/scriptbuilder.h>
+#include <core/os/os.h>
 
 class AngelScriptRunner : public Reference {
 	GDCLASS(AngelScriptRunner, Reference);
@@ -64,6 +65,14 @@ public:
 			if (r == asEXECUTION_EXCEPTION) {
 				// An exception occurred, let the script writer know what happened so it can be corrected.
 				printf("An exception '%s' occurred. Please correct the code and try again.\n", ctx->GetExceptionString());
+
+				String section_name = ctx->GetExceptionFunction()->GetScriptSectionName();
+				String func_name = ctx->GetExceptionFunction()->GetName();
+				String err_message = ctx->GetExceptionString();
+				OS::get_singleton()->print("An exception occurred. Please correct the code and try again.\n");
+				OS::get_singleton()->print("Section: %s\n", section_name.utf8().get_data());
+				OS::get_singleton()->print("Function: %s\n", func_name.utf8().get_data());
+				OS::get_singleton()->print("Message: %s\n", err_message.utf8().get_data());
 			}
 		}
 	}

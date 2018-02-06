@@ -108,6 +108,15 @@ static P value_convert(T *p_this) {
 	return *p_this;
 }
 
+
+/**
+ * Convert pointer to value type
+ */
+template<class T, class P>
+static P ptr_value_convert(T *p_this) {
+	return p_this;
+}
+
 /**
  * Compare function
  */

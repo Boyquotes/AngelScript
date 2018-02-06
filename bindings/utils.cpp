@@ -65,7 +65,7 @@ String get_binding_script_content() {
 		})";
 	static const String OBJECT_EXT_TEMPLATE = R"(
 		Variant opImplConv() const { return @ptr; }
-		void opAssign(const Variant &in ptr) { @this.ptr = ptr; }
+		protected void opAssign(const Variant &in ptr) { @this.ptr = ptr; }
 
 		Object() { _make_instance(); }
 		void free() { ptr.free(); }
@@ -75,6 +75,7 @@ String get_binding_script_content() {
 	static const String REFERENCE_EXT_TEMPLATE = R"(
 		Variant opImplConv() const { return ref; }
 		void opAssign(const Variant &in ref) { @ptr = (this.ref = ref).ptr(); }
+		private void free() {}
 
 		protected REF ref;
 	)";

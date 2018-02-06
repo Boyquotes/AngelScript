@@ -78,7 +78,7 @@ int define_object_types(asIScriptEngine *engine) {
 	r = engine->RegisterObjectBehaviour(OBJECT_CLS_CNAME, asBEHAVE_FACTORY, STR_G2C(OBJECT_CLS_REF_NAME + " f()"), asFUNCTION((object_factory<Object>)), asCALL_CDECL); ERR_FAIL_COND_V( r <0, r);
 	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "void free()", asFUNCTION((object_free<Object>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r <0, r);
 	// Object <==> Variant
-	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant opImplConv() const", asFUNCTION((object_convert<Object, Variant>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
+	r = engine->RegisterObjectMethod(OBJECT_CLS_CNAME, "Variant opImplConv() const", asFUNCTION((ptr_value_convert<Object, Variant>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	r = engine->RegisterObjectMethod("Variant", STR_G2C(OBJECT_CLS_REF_NAME + " opImplConv() const"), asFUNCTION((value_convert<Variant, Object*>)), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);
 	// Reference* ==> REF
 	r = engine->RegisterObjectMethod("REF", STR_G2C(String("REF &opAssign(") + OBJECT_CLS_REF_NAME + ")"), asFUNCTION(reference_from), asCALL_CDECL_OBJLAST); ERR_FAIL_COND_V(r<0, r);

@@ -8,3 +8,4 @@
 *.png
 *.obj
 callgrind.out.*
+*.gen.as
