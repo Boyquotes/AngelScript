@@ -14,12 +14,29 @@ public class Control2 : Control
 		GD.Printt("C#:", OS.GetTicksMsec() - start);
 	}
 
+	int loop(int n) {
+		int ret = 0;
+		for (int i=0; i<n; i++) {
+			for (int j=0; j<n; j++) {
+				ret += j;
+			}
+		}
+		return ret;
+	}
+
+	void benchmark_loop() {
+		int start = OS.GetTicksMsec();
+		loop(10000);
+		GD.Printt("C#:", OS.GetTicksMsec() - start);
+	}
+
     public override void _Ready()
     {
-
+		benchmark_loop();
 		benchmark_fibR();
 		test_godot_api_call();
 		test_resource_api();
+		test_native_func_call();
 	}
 
 	public void test_godot_api_call()
@@ -36,6 +53,17 @@ public class Control2 : Control
 
         GD.Printt("C#:", OS.GetTicksMsec() - start);
 	}
+
+	void test_native_func_call() {
+		Control c = new Control();
+		int start = OS.GetTicksMsec();
+		for (int i=0; i<1000000; i++) {
+			c.MinimumSizeChanged();
+		}
+		GD.Printt("C#:", OS.GetTicksMsec() - start);
+		c.Free();
+	}
+
 	public void test_resource_api()
     {
 

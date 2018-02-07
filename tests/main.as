@@ -7,16 +7,20 @@ void hello_world() {
 
 void main() {
 	// test_resource();
-	benchmark_fibR();
-	benchmark_api_call();
-	benchmark_resource_api();
+	// benchmark_loop();
+	// benchmark_fibR();
+	// benchmark_api_call();
+	// benchmark_resource_api();
+	// benchmark_native_func_call();
 	// benchmark_pure_script_class();
-	print("--------------------------------");
+	// print("--------------------------------");
 	godot::Control@ control = godot::Control::new();
 	godot::Node2D@ node2d = godot::Node2D::new();
 	control.add_child(node2d);
-	godot::Node2D@ n = cast<godot::Node2D@>(control.get_child(0));
-	Variant v = n;
-	print(v);
+	godot::Node2D n = control.get_child(0);
+	if (n !is null) {
+		Variant v = n == node2d;
+		print(v);
+	}
 	control.free();
 }
