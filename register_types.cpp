@@ -7,6 +7,7 @@
 #include "bindings/utils.h"
 #include <scriptbuilder/scriptbuilder.h>
 #include <core/os/os.h>
+#include <angelscript.h>
 
 class AngelScriptRunner : public Reference {
 	GDCLASS(AngelScriptRunner, Reference);
@@ -57,7 +58,7 @@ public:
 		}
 
 		// Create our context, prepare it, and then execute
-		asIScriptContext *ctx = engine->CreateContext();
+		asIScriptContext *ctx = AngelScriptLanguage::get_singletion()->get_context();
 		ctx->Prepare(func);
 		r = ctx->Execute();
 		if (r != asEXECUTION_FINISHED) {
