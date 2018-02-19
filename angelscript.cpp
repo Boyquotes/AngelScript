@@ -6,6 +6,10 @@
 
 AngelScriptLanguage* AngelScriptLanguage::singleton = NULL;
 
+#define as_engine AngelScriptLanguage::get_singleton()->get_script_engine()
+#define as_module AngelScriptLanguage::get_singleton()->get_module()
+#define as_context AngelScriptLanguage::get_singleton()->get_context()
+
 static void message_callback(const asSMessageInfo *msg, void *param) {
 	const char *type = "ERR ";
 	if(msg->type == asMSGTYPE_WARNING)
@@ -18,25 +22,35 @@ static void message_callback(const asSMessageInfo *msg, void *param) {
 AngelScriptLanguage::AngelScriptLanguage() {
 	singleton = this;
 	engine = NULL;
+	context = NULL;
+	module = NULL;
 }
 
 AngelScriptLanguage::~AngelScriptLanguage() {
-
 }
 
 void AngelScriptLanguage::init() {
 	engine = asCreateScriptEngine();
+	ERR_FAIL_COND(!engine);
 	engine->SetMessageCallback(asFUNCTION(message_callback), this, asCALL_CDECL);
+
+	module = engine->GetModule("godot", asGM_CREATE_IF_NOT_EXISTS);
+	ERR_FAIL_COND(!module);
+
+	context = engine->CreateContext();
+	ERR_FAIL_COND(!context);
+
 	ERR_FAIL_COND(asb::bind_angelscript_language(engine) < 0);
 }
 
 void AngelScriptLanguage::finish() {
+	context->Release();
+	context = NULL;
+
+	module = NULL;
+
 	engine->ShutDownAndRelease();
 	engine = NULL;
-}
-
-Error AngelScriptLanguage::execute_file(const String &p_path) {
-	return OK;
 }
 
 void AngelScriptLanguage::get_reserved_words(List<String> *p_words) const {
@@ -121,36 +135,12 @@ void AngelScriptLanguage::get_string_delimiters(List<String> *p_delimiters) cons
 	p_delimiters->push_back("\" \""); // regular string literal
 }
 
-Ref<Script> AngelScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	return NULL;
-}
-
-void AngelScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-
-}
-
-bool AngelScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
-	return false;
-}
-
 Script *AngelScriptLanguage::create_script() const {
-	return NULL;
-}
-
-int AngelScriptLanguage::find_function(const String &p_function, const String &p_code) const {
-	return 0;
+	return memnew(AngelScript);
 }
 
 String AngelScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
 	return "";
-}
-
-void AngelScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {
-
-}
-
-void AngelScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
-
 }
 
 String AngelScriptLanguage::debug_get_error() const {
@@ -165,24 +155,8 @@ int AngelScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	return 0;
 }
 
-String AngelScriptLanguage::debug_get_stack_level_function(int p_level) const {
-	return "";
-}
-
 String AngelScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	return "";
-}
-
-void AngelScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
-
-}
-
-void AngelScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
-
-}
-
-ScriptInstance *AngelScriptLanguage::debug_get_stack_level_instance(int p_level) {
-	return NULL;
 }
 
 void AngelScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
@@ -241,7 +215,7 @@ bool AngelScript::can_instance() const {
 	return true;
 }
 
-Ref<AngelScript::Script> AngelScript::get_base_script() const {
+Ref<Script> AngelScript::get_base_script() const {
 	return NULL;
 }
 
@@ -250,27 +224,36 @@ StringName AngelScript::get_instance_base_type() const {
 }
 
 ScriptInstance *AngelScript::instance_create(Object *p_this) {
-	ERR_FAIL_COND_V(!p_this, NULL);
-	AngelScriptInstance* inst = memnew(AngelScriptInstance);
+
+	AngelScriptInstance * instance = memnew(AngelScriptInstance);
+	instance->owner = p_this;
+	instance->script = Ref<AngelScript>(this);
+	p_this->set_script_instance(instance);
+	instances.insert(instance->owner);
 
 	asITypeInfo *type = module->GetTypeInfoByDecl(get_full_class_name().utf8().get_data());
 	String factory_func = get_full_class_name() + "@ " + get_full_class_name() + "()";
 	asIScriptFunction *factory = type->GetFactoryByDecl(factory_func.utf8().get_data());
-//	AngelScriptLanguage::get_singleton()->
-//	ctx->Prepare(factory);
-//	// Execute the call
-//	ctx->Execute();
-//	// Get the object that was created
-//	asIScriptObject *obj = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
-//	// If you're going to store the object you must increase the reference,
-//	// otherwise it will be destroyed when the context is reused or destroyed.
-//	obj->AddRef();
-
-	return inst;
+	as_context->Prepare(factory);
+	as_context->Execute();
+	// Get the object that was created
+	instance->as_script_instance = *(asIScriptObject**)as_context->GetAddressOfReturnValue();
+	// If you're going to store the object you must increase the reference,
+	// otherwise it will be destroyed when the context is reused or destroyed.
+	instance->as_script_instance->AddRef();
+	return instance;
 }
 
 bool AngelScript::instance_has(const Object *p_this) const {
-	return false;
+
+	bool ret = false;
+	{
+#ifndef NO_THREADS
+	GLOBAL_LOCK_FUNCTION
+#endif
+		instances.has((Object *)p_this);
+	}
+	return ret;
 }
 
 String AngelScript::get_source_code() const {
@@ -281,17 +264,8 @@ void AngelScript::set_source_code(const String &p_code) {
 
 }
 
-Error AngelScript::reload(bool p_keep_state) {
-	return OK;
-}
-
 bool AngelScript::has_method(const StringName &p_method) {
 	return false;
-}
-
-MethodInfo AngelScript::get_method_info(const StringName &p_method) const {
-	MethodInfo mi;
-	return mi;
 }
 
 bool AngelScript::is_tool() const {
@@ -312,22 +286,6 @@ void AngelScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 
 bool AngelScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
 	return false;
-}
-
-void AngelScript::get_script_method_list(List<MethodInfo> *p_list) const {
-
-}
-
-void AngelScript::get_script_property_list(List<PropertyInfo> *p_list) const {
-
-}
-
-void AngelScript::get_constants(Map<StringName, Variant> *p_constants) {
-
-}
-
-void AngelScript::get_members(Set<StringName> *p_constants) {
-
 }
 
 AngelScript::AngelScript() {
@@ -352,18 +310,6 @@ void AngelScriptInstance::get_property_list(List<PropertyInfo> *p_properties) co
 
 Variant::Type AngelScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	return Variant::NIL;
-}
-
-Object *AngelScriptInstance::get_owner() {
-	return NULL;
-}
-
-void AngelScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
-
-}
-
-void AngelScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
-
 }
 
 bool AngelScriptInstance::has_method(const StringName &p_method) const {
@@ -394,8 +340,12 @@ void AngelScriptInstance::notification(int p_notification) {
 
 }
 
-Ref<Script> AngelScriptInstance::get_script() const {
-	return NULL;
+void AngelScriptInstance::refcount_incremented() {
+	as_script_instance->AddRef();
+}
+
+bool AngelScriptInstance::refcount_decremented() {
+	return as_script_instance->Release() == 0;
 }
 
 ScriptInstance::RPCMode AngelScriptInstance::get_rpc_mode(const StringName &p_method) const {
@@ -411,9 +361,21 @@ ScriptLanguage *AngelScriptInstance::get_language() {
 }
 
 AngelScriptInstance::AngelScriptInstance() {
-
+	owner = NULL;
+	as_script_instance = NULL;
 }
 
 AngelScriptInstance::~AngelScriptInstance() {
-
+	if (script.is_valid() && owner) {
+#ifndef NO_THREADS
+	GLOBAL_LOCK_FUNCTION
+#endif
+#ifdef DEBUG_ENABLED
+		Set<Object *>::Element *match = script->instances.find(owner);
+		CRASH_COND(!match);
+		script->instances.erase(match);
+#else
+		script->instances.erase(owner);
+#endif
+	}
 }

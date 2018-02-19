@@ -38,11 +38,11 @@ int bind_angelscript_language(asIScriptEngine *engine) {
 	r = engine->RegisterGlobalFunction("void check(const String &in, bool)", asFUNCTION(angelscript_debug_check), asCALL_CDECL);  ERR_FAIL_COND_V( r <0, r);
 
 	// FIXME: MOVE THIS to tools
-//	if (FileAccessRef f = FileAccess::open("godot.gen.as", FileAccess::WRITE)) {
-//		f->store_string(asb::get_binding_script_content());
-//		f->flush();
-//		f->close();
-//	}
+	if (FileAccessRef f = FileAccess::open("godot.gen.as", FileAccess::WRITE)) {
+		f->store_string(asb::get_binding_script_content());
+		f->flush();
+		f->close();
+	}
 
 	return r;
 }

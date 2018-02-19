@@ -31,27 +31,29 @@ String get_binding_script_content() {
 										"}";
 	static const String OBJECT_TEMPLATE = R"(
 	{class_doc}
-	class {class}{inherits} {
+	shared class {class}{inherits} {
 		{methods}
 		{extention}
 	}
 	namespace {class} {
-		godot::{class}@ new() {
-			godot::{class} obj = bindings::instance_class(bindings::id_{class});
+		shared {class}@ new() {
+			{class} obj = bindings::instance_class(bindings::id_{class});
+			obj._init();
 			return obj;
 		}
 	})";
 
 	static const String REFERENCE_TEMPLATE = R"(
 	{class_doc}
-	class {class}{inherits} {
+	shared class {class}{inherits} {
 		{methods}
 		{extention}
 	}
 	namespace {class} {
-		godot::{class}@ new() {
+		shared {class}@ new() {
 			REF ref = bindings::instance_class(bindings::id_{class});
-			godot::{class} obj = ref;
+			{class} obj = ref;
+			obj._init();
 			return obj;
 		}
 	})";
@@ -155,7 +157,7 @@ String get_binding_script_content() {
 				method_info["tmp_type"] = ret_type.replace("@", "");
 				method_info["return"] = ret_type == "void" ? "" : "return ";
 				method_info["qualifier"] = mi.flags & MethodFlags::METHOD_FLAG_CONST ? "const " : "";
-				method_info["permission"] = mi.name.begins_with("_") ? "protected " : "";
+				method_info["permission"] = mi.name.begins_with("_") && mi.name != "_init" ? "protected " : "";
 				method_info["method_doc"] = "";
 				// Parameters
 				{

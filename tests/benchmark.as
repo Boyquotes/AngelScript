@@ -51,9 +51,37 @@ int fibR(int n) {
     return (fibR(n-2) + fibR(n-1));
 }
 
+int loop(int n) {
+	int ret = 0;
+	for (int i=0; i<n; i++) {
+		for (int j=0; j<n; j++) {
+			ret += j;
+		}
+	}
+	return ret;
+}
+
 void benchmark_fibR() {
 	uint start = get_tick_msec();
 	fibR(34);
 	Variant duration = get_tick_msec() - start;
 	print("AngelScript:    " + duration);
+}
+
+void benchmark_loop() {
+	uint start = get_tick_msec();
+	loop(10000);
+	Variant duration = get_tick_msec() - start;
+	print("AngelScript:    " + duration);
+}
+
+void benchmark_native_func_call() {
+	godot::Control@ c = godot::Control::new();
+	uint start = get_tick_msec();
+	for (int i=0; i<1000000; i++) {
+		c.minimum_size_changed();
+	}
+	Variant duration = get_tick_msec() - start;
+	print("AngelScript:    " + duration);
+	c.free();
 }
