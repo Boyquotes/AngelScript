@@ -4,16 +4,15 @@
 #include <core/script_language.h>
 
 class asIScriptEngine;
-
 class AngelScriptLanguage : public ScriptLanguage
 {
-	static AngelScriptLanguage * singletion;
+	static AngelScriptLanguage * singleton;
 	asIScriptEngine * engine;
 public:
 	AngelScriptLanguage();
 	~AngelScriptLanguage();
 
-	static AngelScriptLanguage *get_singletion() { return singletion; }
+	static AngelScriptLanguage *get_singleton() { return singleton; }
 	asIScriptEngine* get_script_engine() { return engine; }
 
 	virtual String get_name() const { return "AngelScript"; }
@@ -88,14 +87,22 @@ public:
 	virtual void frame();
 };
 
+class asIScriptModule;
 class AngelScript : public Script {
 	GDCLASS(AngelScript, Script);
 protected:
+	String class_name;
+	String class_namespace;
+	asIScriptModule *module;
+
 	virtual bool editor_can_reload_from_file() { return false; }
 	static void _bind_methods();// this is handled by editor better
 public:
 	virtual bool can_instance() const;
 
+	void set_class_name(String p_class_name) { class_name = p_class_name; }
+	String get_class_name() const { return class_name; }
+	String get_full_class_name() const { return class_namespace + "::" + class_name; }
 	virtual Ref<Script> get_base_script() const;
 
 	virtual StringName get_instance_base_type() const;
@@ -132,7 +139,11 @@ public:
 	~AngelScript();
 };
 
+class asIScriptObject;
 class AngelScriptInstance : public ScriptInstance {
+	friend class AngelScript;
+
+	asIScriptObject *as_obj;
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;

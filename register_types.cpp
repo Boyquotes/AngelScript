@@ -13,7 +13,7 @@ class AngelScriptRunner : public Reference {
 	asIScriptEngine *engine;
 public:
 	AngelScriptRunner() {
-		engine = AngelScriptLanguage::get_singletion()->get_script_engine();
+		engine = AngelScriptLanguage::get_singleton()->get_script_engine();
 	}
 	void run(const String& p_script) {
 		// The CScriptBuilder helper is an add-on that loads the file,
@@ -75,6 +75,7 @@ public:
 				OS::get_singleton()->print("Message: %s\n", err_message.utf8().get_data());
 			}
 		}
+		ctx->Release();
 	}
 protected:
 	static void _bind_methods() {
@@ -87,14 +88,14 @@ void register_angelscript_types() {
 	asSetGlobalMemoryFunctions(asb::as_memalloc, asb::as_memfree);
 
 	memnew(AngelScriptLanguage);
-	ScriptServer::register_language(AngelScriptLanguage::get_singletion());
+	ScriptServer::register_language(AngelScriptLanguage::get_singleton());
 
 	ClassDB::register_class<AngelScriptRunner>();
 }
 
 void unregister_angelscript_types() {
 
-	ScriptServer::unregister_language(AngelScriptLanguage::get_singletion());
-	memdelete(AngelScriptLanguage::get_singletion());
+	ScriptServer::unregister_language(AngelScriptLanguage::get_singleton());
+	memdelete(AngelScriptLanguage::get_singleton());
 
 }

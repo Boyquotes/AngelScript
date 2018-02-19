@@ -97,7 +97,7 @@ String get_binding_script_content() {
 	vmethod_return_exp["bool"] = "return false;";
 
 	List<String> keywords;
-	AngelScriptLanguage::get_singletion()->get_reserved_words(&keywords);
+	AngelScriptLanguage::get_singleton()->get_reserved_words(&keywords);
 
 	String classes = "";
 	const StringName ReferenceName = StringName("Reference");

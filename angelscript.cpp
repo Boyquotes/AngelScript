@@ -4,7 +4,7 @@
 #include "bindings/bindings.h"
 #include <core/os/os.h>
 
-AngelScriptLanguage* AngelScriptLanguage::singletion = NULL;
+AngelScriptLanguage* AngelScriptLanguage::singleton = NULL;
 
 static void message_callback(const asSMessageInfo *msg, void *param) {
 	const char *type = "ERR ";
@@ -16,7 +16,7 @@ static void message_callback(const asSMessageInfo *msg, void *param) {
 }
 
 AngelScriptLanguage::AngelScriptLanguage() {
-	singletion = this;
+	singleton = this;
 	engine = NULL;
 }
 
@@ -238,7 +238,7 @@ void AngelScript::_bind_methods() {
 }
 
 bool AngelScript::can_instance() const {
-	return false;
+	return true;
 }
 
 Ref<AngelScript::Script> AngelScript::get_base_script() const {
@@ -250,7 +250,23 @@ StringName AngelScript::get_instance_base_type() const {
 }
 
 ScriptInstance *AngelScript::instance_create(Object *p_this) {
-	return NULL;
+	ERR_FAIL_COND_V(!p_this, NULL);
+	AngelScriptInstance* inst = memnew(AngelScriptInstance);
+
+	asITypeInfo *type = module->GetTypeInfoByDecl(get_full_class_name().utf8().get_data());
+	String factory_func = get_full_class_name() + "@ " + get_full_class_name() + "()";
+	asIScriptFunction *factory = type->GetFactoryByDecl(factory_func.utf8().get_data());
+//	AngelScriptLanguage::get_singleton()->
+//	ctx->Prepare(factory);
+//	// Execute the call
+//	ctx->Execute();
+//	// Get the object that was created
+//	asIScriptObject *obj = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
+//	// If you're going to store the object you must increase the reference,
+//	// otherwise it will be destroyed when the context is reused or destroyed.
+//	obj->AddRef();
+
+	return inst;
 }
 
 bool AngelScript::instance_has(const Object *p_this) const {
@@ -283,7 +299,7 @@ bool AngelScript::is_tool() const {
 }
 
 ScriptLanguage *AngelScript::get_language() const {
-	return AngelScriptLanguage::get_singletion();
+	return AngelScriptLanguage::get_singleton();
 }
 
 bool AngelScript::has_script_signal(const StringName &p_signal) const {
@@ -391,7 +407,7 @@ ScriptInstance::RPCMode AngelScriptInstance::get_rset_mode(const StringName &p_v
 }
 
 ScriptLanguage *AngelScriptInstance::get_language() {
-	return AngelScriptLanguage::get_singletion();
+	return AngelScriptLanguage::get_singleton();
 }
 
 AngelScriptInstance::AngelScriptInstance() {
